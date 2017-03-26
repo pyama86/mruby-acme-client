@@ -1,0 +1,6 @@
+name: mruby-acme-client
+description: acme-client
+author: pyama86
+website: https://github.com/pyama86/mruby-acme-client
+protocol: git
+repository: https://github.com/pyama86/mruby-acme-client.git
