@@ -1,5 +1,7 @@
 private_key = OpenSSL::PKey::RSA.new(4096)
+#endpoint = "http://127.0.0.1:4000/"
 endpoint = "http://127.0.0.1:4000/"
+#endpoint="https://acme-v01.api.letsencrypt.org/"
 client = Acme::Client.new(
   private_key,
   endpoint,

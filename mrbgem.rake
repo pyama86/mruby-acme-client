@@ -12,6 +12,7 @@ MRuby::Gem::Specification.new('mruby-acme-client') do |spec|
   spec.add_dependency 'mruby-base64'
   spec.add_dependency 'mruby-tempfile'
   spec.add_dependency 'mruby-pack'
+  spec.add_dependency 'mruby-digest'
   build_dependency if ENV["BUILD_SSL_DEPENDENCY"]
   spec.cc.flags << "-DMRB_UTF8_STRING"
 end

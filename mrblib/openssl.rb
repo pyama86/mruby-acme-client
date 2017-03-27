@@ -19,7 +19,7 @@ module OpenSSL
   module Digest
     class SHA256
       def digest(token)
-        `printf '%s' "#{token}" | openssl dgst -sha256 -binary`.chomp
+        `printf '%s' '#{token}' | openssl dgst -sha256  -binary`.chomp
       end
     end
   end
@@ -30,10 +30,7 @@ module OpenSSL
     end
 
     def to_s(base=2)
-      hex2bin = 'printf -- "$(cat | '+sed+' -e \'s/[[:space:]]//g\' -e \'s/^(.(.{2})*)$/0\1/\' -e \'s/(.{2})/\\\x\1/g\')"'
-      `echo #{shellescape(@_v.gsub(/\000/, ''))} | #{hex2bin}`.chomp
-#      puts [@_v].pack "H*".length
-#      [@_v].pack "H*"
+      [@_v.gsub(/\s/, '').gsub(/^(.(.{2})*)$/, "0\\1")].pack "H*"
     end
   end
 

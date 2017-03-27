@@ -10,11 +10,6 @@ class CustomHttpRequest < HttpRequest
     nonce = pop_nonce
     body = @crypto.generate_signed_jws(nonce, payload)
     response = super(full_path(uri), body)
-    puts "request body"
-    puts body
-
-    puts "response body"
-    puts response.body
     store_nonce(response.headers)
     response
   end

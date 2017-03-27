@@ -16,8 +16,7 @@ class Acme::Client::Resources::Challenges::Base
   end
 
   def request_verification
-    response = client.connection.post(@uri, resource: 'challenge', type: challenge_type, keyAuthorization: authorization_key)
-    puts response.body
+    response = client.connection.post(@uri, { resource: 'challenge', type: challenge_type, keyAuthorization: authorization_key })
     response.success?
   end
 
