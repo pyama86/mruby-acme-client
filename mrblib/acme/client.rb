@@ -60,11 +60,6 @@ class Acme::Client
       csr: Base64.urlsafe_base64(csr.to_der)
     }
     response = connection.post(@operation_endpoints.fetch('new-cert'), payload)
-
-    File.open('test.pem', 'w'){|fp|
-      fp.puts response.body
-    }
-
     ::Acme::Client::Certificate.new(OpenSSL::X509::Certificate.new(response.body), response.headers['location'], fetch_chain(response), csr)
   end
 
