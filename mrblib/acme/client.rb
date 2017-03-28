@@ -1,16 +1,16 @@
 module Acme; end
-module OpenSSL; end
-module OpenSSL::PKey; end
-class OpenSSL::PKey::EC; end
-module OpenSSL::Digest; end
-class OpenSSL::Digest::SHA256; end
-class Acme::Client; end
+class  Acme::Client; end
 module Acme::Client::Resources; end
 module Acme::Client::Resources::Challenges; end
-class Acme::Client::Resources::Challenges::Base; end
-class Acme::Client::Resources::Challenges::DNS01 < Acme::Client::Resources::Challenges::Base; end
-class Acme::Client::Resources::Challenges::HTTP01 < Acme::Client::Resources::Challenges::Base; end
-class Acme::Client::Resources::Challenges::TLSSNI01 < Acme::Client::Resources::Challenges::Base; end
+class  Acme::Client::Resources::Challenges::Base; end
+class  Acme::Client::Resources::Challenges::DNS01 < Acme::Client::Resources::Challenges::Base; end
+class  Acme::Client::Resources::Challenges::HTTP01 < Acme::Client::Resources::Challenges::Base; end
+class  Acme::Client::Resources::Challenges::TLSSNI01 < Acme::Client::Resources::Challenges::Base; end
+module OpenSSL; end
+module OpenSSL::PKey; end
+class  OpenSSL::PKey::EC; end
+module OpenSSL::Digest; end
+class  OpenSSL::Digest::SHA256; end
 
 class Acme::Client
   DEFAULT_ENDPOINT = 'http://127.0.0.1:4000/'.freeze
