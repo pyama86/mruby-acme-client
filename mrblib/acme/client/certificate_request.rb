@@ -12,22 +12,19 @@ class Acme::Client::CertificateRequest
     locality_name:       'L'
   }.freeze
 
-  attr_reader :private_key, :common_name, :names, :subject
+  attr_reader :private_key, :common_name, :names, :subject, :csr
 
-  def_delegators :csr, :to_pem, :to_der
+  def_delegators :@csr, :to_pem, :to_der
 
-  def initialize(common_name=nil, names=[], private_key=generate_private_key, subject={}, digest=DEFAULT_DIGEST.new)
+  def initialize(names=[], private_key=generate_private_key, subject={}, digest=DEFAULT_DIGEST.new)
     @digest = digest
     @private_key = private_key
     @subject = normalize_subject(subject)
     @common_name = common_name || @subject[SUBJECT_KEYS[:common_name]] || @subject[:common_name]
-    @names = names.to_a.dup
+    @names = names.dup
     normalize_names
     @subject[SUBJECT_KEYS[:common_name]] ||= @common_name
     validate_subject
-  end
-
-  def csr
     @csr ||= generate
   end
 
@@ -69,12 +66,6 @@ class Acme::Client::CertificateRequest
   end
 
   def generate
-    OpenSSL::X509::Request.new.tap do |csr|
-      csr.public_key = @private_key
-#      csr.subject = generate_subject
-      csr.version = 2
-      add_extension(csr)
-      csr.sign @private_key, @digest
-    end
+    OpenSSL::X509::Request.new(common_name, names, private_key)
   end
 end

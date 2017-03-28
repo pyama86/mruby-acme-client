@@ -3,7 +3,7 @@ class Acme::Client::Certificate
 
   attr_reader :x509, :x509_chain, :request, :private_key, :url
 
-  def_delegators :x509, :to_pem, :to_der
+  def_delegators :@x509, :to_pem, :to_der
 
   def initialize(certificate, url, chain, request)
     @x509 = certificate

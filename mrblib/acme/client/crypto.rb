@@ -7,12 +7,12 @@ class Acme::Client::Crypto
 
   def generate_signed_jws(nonce, payload)
     header = { alg: jws_alg, jwk: jwk }
-    encoded_header = urlsafe_base64(header.merge(nonce: nonce).to_json)
+    encoded_header = Base64.urlsafe_base64(header.merge(nonce: nonce).to_json)
 
-    encoded_payload = urlsafe_base64(payload.to_json)
+    encoded_payload = Base64.urlsafe_base64(payload.to_json)
     signature_data = "#{encoded_header}.#{encoded_payload}"
     signature = private_key.sign digest, signature_data
-    encoded_signature = urlsafe_base64(signature)
+    encoded_signature = Base64.urlsafe_base64(signature)
     {
       header: header,
       protected: encoded_header,
@@ -22,16 +22,12 @@ class Acme::Client::Crypto
   end
 
   def thumbprint
-    urlsafe_base64 digest.digest(jwk.to_json)
+    Base64.urlsafe_base64 digest.digest(jwk.to_json)
   end
 
   def digest
     # TODO: Binding
     OpenSSL::Digest::SHA256.new
-  end
-
-  def urlsafe_base64(data)
-    Base64.encode(data).to_s.gsub(/\+/, "-").gsub(/\//, "_").sub(/[\s=]*\z/, '')
   end
 
   private
@@ -51,9 +47,9 @@ class Acme::Client::Crypto
 
   def rsa_jwk
     {
-      e: urlsafe_base64(public_key.e.to_s(2)),
+      e: Base64.urlsafe_base64(public_key.e.to_s(2)),
       kty: 'RSA',
-      n: urlsafe_base64(public_key.n.to_s(2))
+      n: Base64.urlsafe_base64(public_key.n.to_s(2))
     }
   end
 

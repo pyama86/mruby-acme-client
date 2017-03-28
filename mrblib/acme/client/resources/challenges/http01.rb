@@ -19,4 +19,12 @@ class Acme::Client::Resources::Challenges::HTTP01 < Acme::Client::Resources::Cha
   def filename
     "#{filedir}/#{token}"
   end
+
+  def put_content(document_root)
+    `mkdir -p #{File.join(document_root, filedir)}`
+
+    File.open(File.join(document_root, filename), 'w') do |f|
+      f.puts file_content
+    end
+  end
 end

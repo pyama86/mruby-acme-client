@@ -4,7 +4,7 @@ class Acme::Client::Resources::Registration
   def initialize(client, response)
     @client = client
     @uri = response.headers['location']
-    assign_links(decode_link_headers(response.headers))
+    assign_links(response.headers['link'])
     assign_attributes(response.body)
   end
 
@@ -21,20 +21,6 @@ class Acme::Client::Resources::Registration
   end
 
   private
-
-  LINK_MATCH = /<(.*?)>;rel="([\w-]+)"/
-
-  def decode_link_headers(headers)
-    return unless headers.key?('link')
-    link_header = headers['link']
-
-    links = link_header.map { |entry|
-      _, link, name = *entry.match(LINK_MATCH)
-      [name, link]
-    }
-
-    Hash[*links.flatten]
-  end
 
   def assign_links(links)
     @next_uri = links['next']
