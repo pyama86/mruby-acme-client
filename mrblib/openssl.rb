@@ -1,12 +1,4 @@
 module OpenSSL
-  module Digest
-    class SHA256
-      def digest(token)
-        `printf '%s' '#{token}' | openssl dgst -sha256  -binary`.chomp
-      end
-    end
-  end
-
   class BN
     def initialize(v)
       @_v = v
