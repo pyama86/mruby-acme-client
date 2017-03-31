@@ -26,7 +26,6 @@ class Acme::Client::Crypto
   end
 
   def digest
-    # TODO: Binding
     OpenSSL::Digest::SHA256.new
   end
 

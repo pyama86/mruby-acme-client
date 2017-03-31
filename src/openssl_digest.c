@@ -1,30 +1,42 @@
 #include <mruby.h>
-#include <mruby/string.h>
 #include <mruby/compile.h>
+#include <mruby/data.h>
+#include <mruby/string.h>
+#include <string.h>
 #include <openssl/sha.h>
-mrb_value mrb_openssl_digest_sha256_digest(mrb_state *mrb, mrb_value self)
-{
-  mrb_value v;
-  SHA256_CTX c;
-  char *src;
+#include <openssl/ossl_typ.h>
+#include <openssl/evp.h>
+
+mrb_value mrb_openssl_digest_sha256_digest(mrb_state* mrb, mrb_value self) {
+  const EVP_MD *md;
+  EVP_MD_CTX *ctx;
+  char* src;
   unsigned char buffer[SHA256_DIGEST_LENGTH];
+  mrb_get_args(mrb, "z", &src);
 
-  mrb_get_args(mrb, "S", &v);
+	md = EVP_get_digestbyname("SHA256");
+  ctx = EVP_MD_CTX_create();
 
-  src = mrb_str_to_cstr(mrb, v);
-  SHA256_Init(&c);
-  SHA256_Update(&c, src, sizeof(src));
-  SHA256_Final(buffer, &c);
-  return mrb_str_new(mrb, (char *)buffer, SHA256_DIGEST_LENGTH);
+  if (!EVP_DigestInit_ex(ctx, md, NULL))
+    mrb_raise(mrb, E_RUNTIME_ERROR, "Digest initialization failed");
+
+  if (!EVP_DigestUpdate(ctx, src, strlen(src)))
+    mrb_raise(mrb, E_RUNTIME_ERROR, "EVP_DigestUpdate");
+
+  if (!EVP_DigestFinal_ex(ctx, buffer, NULL))
+	  mrb_raise(mrb, E_RUNTIME_ERROR, "EVP_DigestFinal_ex");
+
+  return mrb_str_new(mrb, (char*)buffer, EVP_MD_CTX_size(ctx));
 }
-void
-mrb_init_openssl_digest(mrb_state* mrb) {
+void mrb_init_openssl_digest(mrb_state* mrb) {
   struct RClass* openssl;
   struct RClass* openssl_digest;
   struct RClass* openssl_digest_sha256;
 
   openssl = mrb_define_module(mrb, "OpenSSL");
   openssl_digest = mrb_define_module_under(mrb, openssl, "Digest");
-  openssl_digest_sha256 = mrb_define_class_under(mrb, openssl_digest, "SHA256", mrb->object_class);
-  mrb_define_method(mrb, openssl_digest_sha256, "digest", mrb_openssl_digest_sha256_digest, MRB_ARGS_REQ(1));
+  openssl_digest_sha256 =
+      mrb_define_class_under(mrb, openssl_digest, "SHA256", mrb->object_class);
+  mrb_define_method(mrb, openssl_digest_sha256, "digest",
+                    mrb_openssl_digest_sha256_digest, MRB_ARGS_REQ(1));
 }
