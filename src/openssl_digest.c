@@ -1,12 +1,4 @@
-#include <mruby.h>
-#include <mruby/compile.h>
-#include <mruby/data.h>
-#include <mruby/string.h>
-#include <string.h>
-#include <openssl/sha.h>
-#include <openssl/ossl_typ.h>
-#include <openssl/evp.h>
-
+#include "openssl.h"
 mrb_value mrb_openssl_digest_sha256_digest(mrb_state* mrb, mrb_value self) {
   const EVP_MD *md;
   EVP_MD_CTX *ctx;
