@@ -1,4 +1,4 @@
-#include "openssl.h"
+#include "ossl.h"
 
 static void ossl_bn_free(mrb_state *mrb, void *ptr)
 {
@@ -9,8 +9,8 @@ static const mrb_data_type ossl_bn_type = {"OpenSSL/BN", ossl_bn_free};
 
 mrb_value ossl_bn_new(mrb_state *mrb, const BIGNUM *bn)
 {
-  struct RClass *openssl, *openssl_bn;
-  mrb_value openssl_bn_instance;
+  struct RClass *ossl, *ossl_bn;
+  mrb_value ossl_bn_instance;
   BIGNUM *newbn;
 
   newbn = bn ? BN_dup(bn) : BN_new();
@@ -19,16 +19,16 @@ mrb_value ossl_bn_new(mrb_state *mrb, const BIGNUM *bn)
     mrb_raise(mrb, E_RUNTIME_ERROR, "BN new Error!");
   }
 
-  openssl = mrb_module_get(mrb, "OpenSSL");
-  openssl_bn = mrb_class_get_under(mrb, openssl, "BN");
-  openssl_bn_instance = mrb_obj_new(mrb, openssl_bn, 0, NULL);
+  ossl = mrb_module_get(mrb, "OpenSSL");
+  ossl_bn = mrb_class_get_under(mrb, ossl, "BN");
+  ossl_bn_instance = mrb_obj_new(mrb, ossl_bn, 0, NULL);
 
-  mrb_iv_set(mrb, openssl_bn_instance, mrb_intern_lit(mrb, "bn"),
+  mrb_iv_set(mrb, ossl_bn_instance, mrb_intern_lit(mrb, "bn"),
              mrb_obj_value(Data_Wrap_Struct(mrb, mrb->object_class, &ossl_bn_type, (void *)newbn)));
-  return openssl_bn_instance;
+  return ossl_bn_instance;
 }
 
-static mrb_value mrb_openssl_bn_to_s(mrb_state *mrb, mrb_value self)
+static mrb_value mrb_ossl_bn_to_s(mrb_state *mrb, mrb_value self)
 {
   int base = 10, len;
   BIGNUM *bn;
@@ -53,11 +53,11 @@ static mrb_value mrb_openssl_bn_to_s(mrb_state *mrb, mrb_value self)
   return str;
 }
 
-void mrb_init_openssl_bn(mrb_state *mrb)
+void mrb_init_ossl_bn(mrb_state *mrb)
 {
-  struct RClass *openssl, *openssl_bn;
+  struct RClass *ossl, *ossl_bn;
 
-  openssl = mrb_define_module(mrb, "OpenSSL");
-  openssl_bn = mrb_define_class_under(mrb, openssl, "BN", mrb->object_class);
-  mrb_define_method(mrb, openssl_bn, "to_s", mrb_openssl_bn_to_s, MRB_ARGS_REQ(1));
+  ossl = mrb_define_module(mrb, "OpenSSL");
+  ossl_bn = mrb_define_class_under(mrb, ossl, "BN", mrb->object_class);
+  mrb_define_method(mrb, ossl_bn, "to_s", mrb_ossl_bn_to_s, MRB_ARGS_REQ(1));
 }

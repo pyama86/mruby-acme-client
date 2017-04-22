@@ -1,6 +1,16 @@
 #ifndef OSSL_PKEY
 #define OSSL_PKEY
 
+#define GetPKeyRSA(mrb, obj, pkey)                                                                 \
+  do {                                                                                             \
+    GetPKey((mrb), (obj), (pkey));                                                                 \
+    if (EVP_PKEY_type((pkey)->type) != EVP_PKEY_RSA) { /* PARANOIA? */                             \
+      mrb_raise(mrb, E_RUNTIME_ERROR, "THIS IS NOT A RSA!");                                            \
+    }                                                                                              \
+  } while (0)
+
+mrb_value ossl_rsa_new(mrb_state *mrb, EVP_PKEY *pkey);
+
 #define OSSL_PKEY_BN(keytype, name)                                                                \
   /*                                                                                               \
    *  call-seq:                                                                                    \

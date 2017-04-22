@@ -1,0 +1,5 @@
+json = '{"e":"AQAB","kty":"RSA","n":"1i1WQ2XU3wP7xuXZQQ6uiH7qiAeoGMLKlIW2zNudL2VgMdX1TrtO6rsOJO0IhGA_BTamqwAun4xe2Sg3PzLGx4-Kty88ea34MPrabeyI9U8u00Z43HNPOR7Qy16t-F-MuNgnrk-lHd-PHCnYKU6ReNN3dniPCaS9w1GybgK-N0IxG4zjeEEu4bVRJjuws-yr5xEhvOtNIxETw_4Q-lUeBjaEhjR3j-41z4qjreDDIiH4x-yteL2JLDLL8y5WkWVQ0AI-KT8pQgs2d0ZbZwLpfpUTSmHFhGi5R0xv7sw6fC02ElJpEYngw5V_IWDOkSFRjc5KO6gStEQkCbRzYvfgCggmJG8fJn9wjIOlqCpDZXbXKWObyTA1oterqP-ZCNJkAMdXwu6z7C4W17yem9nvSIFkJRGeOqeodRIsdKhdvA-iKLMgo8khAq9nGzyTyJI5jEgT-6oxWgY2m5PC8cCJkvW6d99IXYtTaxCBainJF8kG7vXt3KKNmnipiY_hqCBM6MBxfdIq_aZ45BO3S4h9mtKDoEkuFDmdoTkn6CDVIjt3_f7Wg3Z_g2yR-OJJJjX2GnySEQH94yef6LMFmOfk1XlpY0pl_HGqXD4WXd4LCJZcLZyPkzqxWwlPrgqittY77p6SrBSTH9QDl9yIv1iyXt2w40gx6Dw7GJrDy0RAXhs"}'
+
+puts Base64.urlsafe_base64 OpenSSL::Digest::SHA256.new.digest("hoge")
+puts o = OpenSSL::PKey::RSA.new(4096)
+puts Base64.urlsafe_base64 o.public_key.e.to_s(2)

@@ -6,8 +6,6 @@ class  Acme::Client::Resources::Challenges::Base; end
 class  Acme::Client::Resources::Challenges::DNS01 < Acme::Client::Resources::Challenges::Base; end
 class  Acme::Client::Resources::Challenges::HTTP01 < Acme::Client::Resources::Challenges::Base; end
 class  Acme::Client::Resources::Challenges::TLSSNI01 < Acme::Client::Resources::Challenges::Base; end
-module OpenSSL; end
-module OpenSSL::PKey; end
 class  OpenSSL::PKey::EC; end
 module OpenSSL::Digest; end
 

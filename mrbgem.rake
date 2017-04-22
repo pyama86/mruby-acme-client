@@ -17,5 +17,6 @@ MRuby::Gem::Specification.new('mruby-acme-client') do |spec|
   build_dependency if ENV["BUILD_SSL_DEPENDENCY"]
   spec.cc.include_paths << "#{build.root}/src"
   spec.linker.libraries << 'crypto' unless RUBY_PLATFORM =~ /darwin/
+  spec.cc.flags << "-g3 -O0"
 end
 

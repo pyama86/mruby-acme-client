@@ -24,7 +24,6 @@ domains.each do |n|
   sleep(1)
   puts challenge.authorization.verify_status # => 'valid'
 end
-
 csr = Acme::Client::CertificateRequest.new(domains)
 certificate = client.new_certificate(csr)
 
