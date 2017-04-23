@@ -5,6 +5,7 @@ void mrb_init_ossl_pkey(mrb_state *mrb);
 void mrb_init_ossl_pkey_rsa(mrb_state *mrb);
 void mrb_init_ossl_bn(mrb_state *mrb);
 void mrb_init_ossl_x509(mrb_state *mrb);
+void mrb_init_ossl_x509_attr(mrb_state *mrb);
 void mrb_init_ossl_x509_request(mrb_state *mrb);
 void mrb_init_ossl_asn1(mrb_state *mrb);
 void mrb_init_ossl_x509_name(mrb_state *mrb);
@@ -23,6 +24,8 @@ void mrb_mruby_acme_client_gem_init(mrb_state *mrb)
   mrb_init_ossl_pkey_rsa(mrb);
   DONE;
   mrb_init_ossl_x509(mrb);
+  DONE;
+  mrb_init_ossl_x509_attr(mrb);
   DONE;
   mrb_init_ossl_x509_request(mrb);
   DONE;
