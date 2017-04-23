@@ -1,26 +1,4 @@
 #include "ossl.h"
-#define GetX509Name(mrb, obj, name)                                                                \
-  do {                                                                                             \
-    mrb_value value_name= mrb_iv_get(mrb, obj, mrb_intern_lit(mrb, "x509name"));                  \
-    name = DATA_PTR(value_name);                                                                   \
-  } while (0)
-
-#define SetX509Name(mrb, obj, name)                                                                \
-  do {                                                                                             \
-    if (!(name)) {                                                                                 \
-      mrb_raise((mrb), E_RUNTIME_ERROR, "Name wasn't initialized!");                               \
-    }                                                                                              \
-    mrb_iv_set((mrb), (obj), mrb_intern_lit(mrb, "x509name"),                                      \
-               mrb_obj_value(                                                                      \
-                   Data_Wrap_Struct(mrb, mrb->object_class, &ossl_x509name_type, (void *)name)));  \
-  } while (0)
-#define OBJECT_TYPE_TEMPLATE(mrb, klass)                                                                  \
-  mrb_const_get(mrb, klass, mrb_intern_lit(mrb, "OBJECT_TYPE_TEMPLATE"))
-#define DEFAULT_OBJECT_TYPE(mrb, klass) mrb_const_get(mrb, klass, mrb_intern_lit(mrb, "DEFAULT_OBJECT_TYPE"))
-
-#define RB_BLOCK_CALL_FUNC_ARGLIST(yielded_arg, callback_arg)                                      \
-  mrb_value yielded_arg, mrb_value callback_arg, int argc, const mrb_value *argv, mrb_value blockarg
-#define mrb_aref(mrb, obj, key) mrb_funcall((mrb), (obj), mrb_intern_lit((mrb), "[]"), 1, (key))
 
 struct RClass *cX509Name;
 struct RClass *eX509NameError;
@@ -38,15 +16,15 @@ static mrb_value ossl_x509name_add_entry(mrb_state *mrb, mrb_value self)
   const char *oid_name;
   mrb_value oid, value, type;
 
-  mrb_get_args(mrb, "ss|s", &oid, &value, &type);
+  mrb_get_args(mrb, "SS|o", &oid, &value, &type);
 
   oid_name = mrb_str_to_cstr(mrb, oid);
   if (mrb_nil_p(type))
     type = mrb_aref(mrb, OBJECT_TYPE_TEMPLATE(mrb, self), oid);
   GetX509Name(mrb, self, name);
   if (!X509_NAME_add_entry_by_txt(name, oid_name, mrb_fixnum(type),
-                                  (const unsigned char *)RSTRING_PTR(value), RSTRING_LEN(value),
-                                  -1, 0)) {
+                                  (const unsigned char *)RSTRING_PTR(value), RSTRING_LEN(value), -1,
+                                  0)) {
     mrb_raise(mrb, eX509NameError, NULL);
   }
   return self;
@@ -70,14 +48,8 @@ static mrb_value ossl_x509name_init_i(mrb_state *mrb, mrb_value args, mrb_value 
   return mrb_false_value();
 }
 
-static mrb_value *ossl_x509name_alloc(mrb_state *mrb, mrb_value *self)
-{
-  return self;
-}
-
 static mrb_value ossl_x509name_initialize(mrb_state *mrb, mrb_value self)
 {
-  ossl_x509name_alloc(mrb, &self);
   X509_NAME *name;
   mrb_value arg, template;
   int argc;
