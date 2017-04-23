@@ -16,6 +16,8 @@ mrb_value ossl_to_der_if_possible(mrb_state *mrb, mrb_value obj);
 
 #include <mruby/compile.h>
 #include <mruby/data.h>
+#include <mruby/hash.h>
+#include <mruby/array.h>
 #include <mruby/string.h>
 #include <mruby/variable.h>
 #include <openssl/asn1_mac.h>
