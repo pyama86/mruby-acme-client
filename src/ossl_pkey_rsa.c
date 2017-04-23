@@ -80,7 +80,6 @@ static mrb_value mrb_ossl_pkey_rsa_init(mrb_state *mrb, mrb_value self)
     rsa = RSA_new();
   } else if (mrb_fixnum(arg)) {
     rsa = rsa_generate(mrb_fixnum(arg), argc == 1 ? RSA_F4 : (unsigned) mrb_fixnum(pass));
-//    rsa = rsa_generate(mrb_fixnum(arg), RSA_F4);
     if (!rsa)
       mrb_raise(mrb, eRSAError, NULL);
   } else {
