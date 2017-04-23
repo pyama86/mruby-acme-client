@@ -1,31 +1,49 @@
 #include "ossl.h"
 
+struct RClass *cBN;
+struct RClass *eBNError;
 static void ossl_bn_free(mrb_state *mrb, void *ptr)
 {
   BN_clear_free(ptr);
 }
-
 static const mrb_data_type ossl_bn_type = {"OpenSSL/BN", ossl_bn_free};
+
+BIGNUM *GetBNPtr(mrb_state *mrb, VALUE obj)
+{
+  BIGNUM *bn = NULL;
+  VALUE newobj;
+
+  if (mrb_obj_is_kind_of(mrb, obj, cBN)) {
+    GetBN(mrb, obj, bn);
+  } else
+    switch (mrb_type(obj)) {
+    case MRB_TT_FIXNUM:
+      newobj = NewBN(mrb, cBN); /* GC bug */
+      if (!BN_dec2bn(&bn, RSTRING_PTR(obj))) {
+        mrb_raise(mrb, eBNError, NULL);
+      }
+      SetBN(mrb, newobj, bn); /* Handle potencial mem leaks */
+      break;
+    default:
+      mrb_raise(mrb, E_TYPE_ERROR, "Cannot convert into OpenSSL::BN");
+    }
+  return bn;
+}
+
 
 mrb_value ossl_bn_new(mrb_state *mrb, const BIGNUM *bn)
 {
-  struct RClass *ossl, *ossl_bn;
-  mrb_value ossl_bn_instance;
   BIGNUM *newbn;
+  VALUE obj;
 
+  obj = NewBN(mrb, cBN);
   newbn = bn ? BN_dup(bn) : BN_new();
-
   if (!newbn) {
-    mrb_raise(mrb, E_RUNTIME_ERROR, "BN new Error!");
+    mrb_raise(mrb, eBNError, NULL);
   }
+  SetBN(mrb, obj, newbn);
 
-  ossl = mrb_module_get(mrb, "OpenSSL");
-  ossl_bn = mrb_class_get_under(mrb, ossl, "BN");
-  ossl_bn_instance = mrb_obj_new(mrb, ossl_bn, 0, NULL);
-
-  mrb_iv_set(mrb, ossl_bn_instance, mrb_intern_lit(mrb, "bn"),
-             mrb_obj_value(Data_Wrap_Struct(mrb, mrb->object_class, &ossl_bn_type, (void *)newbn)));
-  return ossl_bn_instance;
+  return obj;
 }
 
 static mrb_value mrb_ossl_bn_to_s(mrb_state *mrb, mrb_value self)
@@ -52,12 +70,86 @@ static mrb_value mrb_ossl_bn_to_s(mrb_state *mrb, mrb_value self)
 
   return str;
 }
+static VALUE ossl_bn_initialize(mrb_state *mrb, VALUE self)
+{
+  BIGNUM *bn;
+  VALUE str, bs;
+  int base = 10;
+
+  if (!(bn = BN_new())) {
+    mrb_raise(mrb, eBNError, NULL);
+  }
+  SetBN(mrb, self, bn);
+
+  if (mrb_get_args(mrb, "S|i", &str, &bs) == 2) {
+    base = NUM2INT(bs);
+  }
+
+  if (mrb_type(str) == MRB_TT_FIXNUM) {
+    long i;
+    unsigned char bin[sizeof(long)];
+    long n = FIX2LONG(str);
+    unsigned long un = labs(n);
+
+    for (i = sizeof(long) - 1; 0 <= i; i--) {
+      bin[i] = un & 0xff;
+      un >>= 8;
+    }
+
+    if (!BN_bin2bn(bin, sizeof(bin), bn)) {
+      mrb_raise(mrb, eBNError, NULL);
+    }
+    if (n < 0)
+      BN_set_negative(bn, 1);
+    return self;
+  } else {
+    mrb_raise(mrb, eBNError, "undefined method");
+  }
+  if (mrb_obj_is_kind_of(mrb, str, cBN)) {
+    BIGNUM *other;
+
+    GetBN(mrb, self, bn);
+    GetBN(mrb, str, other); /* Safe - we checked kind_of? above */
+    if (!BN_copy(bn, other)) {
+      mrb_raise(mrb, eBNError, NULL);
+    }
+    return self;
+  }
+
+  GetBN(mrb, self, bn);
+  switch (base) {
+  case 0:
+    if (!BN_mpi2bn((unsigned char *)RSTRING_PTR(str), RSTRING_LEN(str), bn)) {
+      mrb_raise(mrb, eBNError, NULL);
+    }
+    break;
+  case 2:
+    if (!BN_bin2bn((unsigned char *)RSTRING_PTR(str), RSTRING_LEN(str), bn)) {
+      mrb_raise(mrb, eBNError, NULL);
+    }
+    break;
+  case 10:
+    if (!BN_dec2bn(&bn, RSTRING_PTR(str))) {
+      mrb_raise(mrb, eBNError, NULL);
+    }
+    break;
+  case 16:
+    if (!BN_hex2bn(&bn, RSTRING_PTR(str))) {
+      mrb_raise(mrb, eBNError, NULL);
+    }
+    break;
+  default:
+    mrb_raisef(mrb, E_ARGUMENT_ERROR, "invalid radix %d", base);
+  }
+  return self;
+}
 
 void mrb_init_ossl_bn(mrb_state *mrb)
 {
-  struct RClass *ossl, *ossl_bn;
+  eBNError = mrb_define_class_under(mrb, mOSSL, "BNError", eOSSLError);
 
-  ossl = mrb_define_module(mrb, "OpenSSL");
-  ossl_bn = mrb_define_class_under(mrb, ossl, "BN", mrb->object_class);
-  mrb_define_method(mrb, ossl_bn, "to_s", mrb_ossl_bn_to_s, MRB_ARGS_REQ(1));
+  cBN = mrb_define_class_under(mrb, mOSSL, "BN", mrb->object_class);
+  mrb_define_method(mrb, cBN, "initialize", ossl_bn_initialize, MRB_ARGS_ARG(1, 1));
+
+  mrb_define_method(mrb, cBN, "to_s", mrb_ossl_bn_to_s, MRB_ARGS_REQ(1));
 }
