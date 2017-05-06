@@ -18,6 +18,12 @@ struct RClass *cX509Req;
     req = DATA_PTR(value_req);                                                                     \
   } while (0)
 
+#define SafeGetX509Req(mrb, obj, req)                                                              \
+  do {                                                                                             \
+    OSSL_Check_Kind((mrb), (obj), cX509Req);                                                       \
+    GetX509Req((mrb), (obj), (req));                                                               \
+  } while (0)
+
 static void ossl_x509req_free(mrb_state *mrb, void *ptr)
 {
   X509_REQ_free(ptr);
@@ -25,13 +31,35 @@ static void ossl_x509req_free(mrb_state *mrb, void *ptr)
 
 static const mrb_data_type ossl_x509_request_type = {"OpenSSL/X509/REQ", ossl_x509req_free};
 
-static mrb_value ossl_x509_request_init(mrb_state *mrb, mrb_value self)
+static mrb_value ossl_x509req_initialize(mrb_state *mrb, mrb_value self)
 {
-  X509_REQ *req;
-  if (!(req = X509_REQ_new())) {
+  BIO *in;
+  X509_REQ *req, *x;
+  VALUE arg;
+
+  if (!(x = X509_REQ_new())) {
     mrb_raise(mrb, eX509ReqError, NULL);
   }
-  SetX509Req(mrb, self, req);
+  SetX509Req(mrb, self, x);
+
+  if (mrb_get_args(mrb, "|o", &arg) == 0)
+    return self;
+
+  arg = ossl_to_der_if_possible(mrb, arg);
+  in = ossl_obj2bio(mrb, arg);
+
+  req = PEM_read_bio_X509_REQ(in, &x, NULL, NULL);
+
+  SetX509Req(mrb, self, x);
+
+  if (!req) {
+    OSSL_BIO_reset(in);
+    req = d2i_X509_REQ_bio(in, &x);
+    SetX509Req(mrb, self, x);
+  }
+  BIO_free(in);
+  if (!req)
+    mrb_raise(mrb, eX509ReqError, NULL);
 
   return self;
 }
@@ -92,6 +120,16 @@ static mrb_value ossl_x509req_set_version(mrb_state *mrb, mrb_value self)
 
   return version;
 }
+
+X509_ATTRIBUTE *GetX509AttrPtr(mrb_state *mrb, VALUE obj)
+{
+  X509_ATTRIBUTE *attr;
+
+  GetX509Attr(mrb, obj, attr);
+
+  return attr;
+}
+
 static VALUE ossl_x509req_add_attribute(mrb_state *mrb, VALUE self)
 {
   X509_REQ *req;
@@ -99,21 +137,70 @@ static VALUE ossl_x509req_add_attribute(mrb_state *mrb, VALUE self)
   mrb_get_args(mrb, "o", &attr);
 
   GetX509Req(mrb, self, req);
-  if (!X509_REQ_add1_attr(req, DupX509AttrPtr(mrb, attr))) {
-    mrb_raise(mrb, eX509ReqError, NULL);
+
+  if (!X509_REQ_add1_attr(req, GetX509AttrPtr(mrb, attr))) {
+    mrb_raisef(mrb, eX509ReqError, "missing add attribute:%S", ossl_fetch_error(mrb));
   }
 
   return attr;
 }
 
-void mrb_init_ossl_x509_request(mrb_state *mrb)
+X509_REQ *GetX509ReqPtr(mrb_state *mrb, VALUE obj)
+{
+  X509_REQ *req;
+
+  SafeGetX509Req(mrb, obj, req);
+
+  return req;
+}
+
+static VALUE ossl_x509req_sign(mrb_state *mrb, VALUE self)
+{
+  mrb_value key, digest;
+  X509_REQ *req;
+  EVP_PKEY *pkey;
+  const EVP_MD *md;
+  mrb_get_args(mrb, "oo", &key, &digest);
+
+  GetX509Req(mrb, self, req);
+  pkey = GetPrivPKeyPtr(mrb, key); /* NO NEED TO DUP */
+  md = GetDigestPtr(mrb, digest);
+  if (!X509_REQ_sign(req, pkey, md)) {
+    mrb_raise(mrb, eX509ReqError, NULL);
+  }
+
+  return self;
+}
+
+static VALUE ossl_x509req_to_der(mrb_state *mrb, VALUE self)
+{
+  X509_REQ *req;
+  VALUE str;
+  long len;
+  unsigned char *p;
+
+  GetX509Req(mrb, self, req);
+  if ((len = i2d_X509_REQ(req, NULL)) <= 0)
+    mrb_raise(mrb, eX509ReqError, NULL);
+  str = mrb_str_new(mrb, 0, len);
+  p = (unsigned char *)RSTRING_PTR(str);
+  if (i2d_X509_REQ(req, &p) <= 0)
+    mrb_raise(mrb, eX509ReqError, NULL);
+  ossl_str_adjust(mrb, str, p);
+
+  return str;
+}
+
+void Init_ossl_x509req(mrb_state *mrb)
 {
   eX509ReqError = mrb_define_class_under(mrb, mX509, "RequestError", eOSSLError);
 
   cX509Req = mrb_define_class_under(mrb, mX509, "Request", mrb->object_class);
-  mrb_define_method(mrb, cX509Req, "initialize", ossl_x509_request_init, MRB_ARGS_NONE());
-  mrb_define_method(mrb, cX509Req, "public_key=", ossl_x509req_set_public_key, MRB_ARGS_NONE());
-  mrb_define_method(mrb, cX509Req, "subject=", ossl_x509req_set_subject, MRB_ARGS_NONE());
-  mrb_define_method(mrb, cX509Req, "version=", ossl_x509req_set_version, MRB_ARGS_NONE());
+  mrb_define_method(mrb, cX509Req, "initialize", ossl_x509req_initialize, MRB_ARGS_OPT(1));
+  mrb_define_method(mrb, cX509Req, "public_key=", ossl_x509req_set_public_key, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, cX509Req, "subject=", ossl_x509req_set_subject, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, cX509Req, "version=", ossl_x509req_set_version, MRB_ARGS_REQ(1));
   mrb_define_method(mrb, cX509Req, "add_attribute", ossl_x509req_add_attribute, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, cX509Req, "sign", ossl_x509req_sign, MRB_ARGS_REQ(2));
+  mrb_define_method(mrb, cX509Req, "to_der", ossl_x509req_to_der, MRB_ARGS_NONE());
 }

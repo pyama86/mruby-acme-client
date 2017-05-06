@@ -84,11 +84,22 @@ mrb_value ossl_pkey_alloc(mrb_state *mrb, mrb_value klass)
   return klass;
 }
 
-void mrb_init_ossl_pkey(mrb_state *mrb)
+EVP_PKEY *GetPrivPKeyPtr(mrb_state *mrb, VALUE obj)
+{
+  EVP_PKEY *pkey;
+  if (!mrb_bool(mrb_funcall(mrb, obj, "private?", 0, NULL))) {
+    mrb_raise(mrb, E_ARGUMENT_ERROR, "Private key is needed.");
+  }
+  SafeGetPKey(mrb, obj, pkey);
+
+  return pkey;
+}
+void Init_ossl_pkey(mrb_state *mrb)
 {
   mPKey = mrb_define_module_under(mrb, mOSSL, "PKey");
   ePKeyError = mrb_define_class_under(mrb, mPKey, "PKeyError", eOSSLError);
   cPKey = mrb_define_class_under(mrb, mPKey, "PKey", mrb->object_class);
   mrb_define_method(mrb, cPKey, "initialize", ossl_pkey_init, MRB_ARGS_NONE());
   mrb_define_method(mrb, cPKey, "sign", mrb_ossl_pkey_sign, MRB_ARGS_REQ(2));
+  Init_ossl_rsa(mrb);
 }

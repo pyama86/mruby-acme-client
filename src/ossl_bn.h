@@ -20,6 +20,7 @@
   } while (0)
 
 
+void Init_ossl_bn(mrb_state *mrb);
 mrb_value ossl_bn_new(mrb_state *mrb, const BIGNUM *);
 BIGNUM *GetBNPtr(mrb_state *mrb, VALUE);
 

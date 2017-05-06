@@ -3,9 +3,11 @@
 extern struct RClass *cPKey;
 extern struct RClass *mPKey;
 extern struct RClass *ePKeyError;
+void Init_ossl_pkey(mrb_state *mrb);
 mrb_value ossl_pkey_new(mrb_state *mrb, EVP_PKEY *pkey);
 mrb_value ossl_pkey_alloc(mrb_state *mrb, mrb_value klass);
 EVP_PKEY *GetPKeyPtr(mrb_state *mrb, mrb_value obj);
+EVP_PKEY *GetPrivPKeyPtr(mrb_state *mrb, VALUE obj);
 
 #define NewPKey(mrb, klass)                                                                         \
   mrb_obj_value(Data_Wrap_Struct(mrb, klass, &ossl_evp_pkey_type, 0))

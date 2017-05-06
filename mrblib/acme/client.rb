@@ -7,7 +7,6 @@ class  Acme::Client::Resources::Challenges::DNS01 < Acme::Client::Resources::Cha
 class  Acme::Client::Resources::Challenges::HTTP01 < Acme::Client::Resources::Challenges::Base; end
 class  Acme::Client::Resources::Challenges::TLSSNI01 < Acme::Client::Resources::Challenges::Base; end
 class  OpenSSL::PKey::EC; end
-module OpenSSL::Digest; end
 
 class Acme::Client
   DEFAULT_ENDPOINT = 'http://127.0.0.1:4000/'.freeze

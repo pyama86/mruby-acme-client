@@ -26,7 +26,6 @@ domains.each do |n|
 end
 csr = Acme::Client::CertificateRequest.new(domains)
 certificate = client.new_certificate(csr)
-
 {
   'privkey.pem' => certificate.request.private_key.to_pem,
   "cert.pem" => certificate.to_pem,

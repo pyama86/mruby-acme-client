@@ -3,4 +3,5 @@
 
 BIO *ossl_obj2bio(mrb_state *mrb, mrb_value self);
 
+VALUE ossl_membio2str(mrb_state *mrb, BIO *bio);
 #endif

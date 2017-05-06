@@ -144,7 +144,7 @@ static VALUE ossl_bn_initialize(mrb_state *mrb, VALUE self)
   return self;
 }
 
-void mrb_init_ossl_bn(mrb_state *mrb)
+void Init_ossl_bn(mrb_state *mrb)
 {
   eBNError = mrb_define_class_under(mrb, mOSSL, "BNError", eOSSLError);
 

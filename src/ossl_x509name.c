@@ -92,7 +92,7 @@ static mrb_value ossl_x509name_initialize(mrb_state *mrb, mrb_value self)
   return self;
 }
 
-void mrb_init_ossl_x509_name(mrb_state *mrb)
+void Init_ossl_x509name(mrb_state *mrb)
 {
   eX509NameError = mrb_define_class_under(mrb, mX509, "NameError", eOSSLError);
   cX509Name = mrb_define_class_under(mrb, mX509, "Name", mrb->object_class);

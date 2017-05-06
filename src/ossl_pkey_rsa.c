@@ -79,7 +79,7 @@ static mrb_value mrb_ossl_pkey_rsa_init(mrb_state *mrb, mrb_value self)
   if (mrb_fixnum(arg) == 0) {
     rsa = RSA_new();
   } else if (mrb_fixnum(arg)) {
-    rsa = rsa_generate(mrb_fixnum(arg), argc == 1 ? RSA_F4 : (unsigned) mrb_fixnum(pass));
+    rsa = rsa_generate(mrb_fixnum(arg), argc == 1 ? RSA_F4 : (unsigned)mrb_fixnum(pass));
     if (!rsa)
       mrb_raise(mrb, eRSAError, NULL);
   } else {
@@ -154,7 +154,7 @@ static mrb_value mrb_ossl_pkey_rsa_public_key(mrb_state *mrb, mrb_value self)
   return obj;
 }
 
-static mrb_value mrb_ossl_rsa_is_private(mrb_state *mrb, mrb_value self)
+mrb_value mrb_ossl_rsa_is_private(mrb_state *mrb, mrb_value self)
 {
   EVP_PKEY *pkey;
   GetPKey(mrb, self, pkey);
@@ -164,7 +164,42 @@ static mrb_value mrb_ossl_rsa_is_private(mrb_state *mrb, mrb_value self)
 OSSL_PKEY_BN(rsa, n)
 OSSL_PKEY_BN(rsa, e)
 
-void mrb_init_ossl_pkey_rsa(mrb_state *mrb)
+static VALUE ossl_rsa_export(mrb_state *mrb, VALUE self)
+{
+  EVP_PKEY *pkey;
+  BIO *out;
+  const EVP_CIPHER *ciph = NULL;
+  char *passwd = NULL;
+  VALUE cipher, pass, str;
+
+  GetPKeyRSA(mrb, self, pkey);
+
+  int argc = mrb_get_args(mrb, "|oo", &cipher, &pass);
+
+  if (argc > 0) {
+    mrb_raise(mrb, E_RUNTIME_ERROR, "unsupport interface");
+  }
+  if (!(out = BIO_new(BIO_s_mem()))) {
+    mrb_raise(mrb, eRSAError, NULL);
+  }
+  if (RSA_HAS_PRIVATE(pkey->pkey.rsa)) {
+    if (!PEM_write_bio_RSAPrivateKey(out, pkey->pkey.rsa, ciph, NULL, 0, ossl_pem_passwd_cb,
+                                     passwd)) {
+      BIO_free(out);
+      mrb_raise(mrb, eRSAError, NULL);
+    }
+  } else {
+    if (!PEM_write_bio_RSA_PUBKEY(out, pkey->pkey.rsa)) {
+      BIO_free(out);
+      mrb_raise(mrb, eRSAError, NULL);
+    }
+  }
+  str = ossl_membio2str(mrb, out);
+
+  return str;
+}
+
+void Init_ossl_rsa(mrb_state *mrb)
 {
 
   cRSA = mrb_define_class_under(mrb, mPKey, "RSA", cPKey);
@@ -173,6 +208,8 @@ void mrb_init_ossl_pkey_rsa(mrb_state *mrb)
   mrb_define_method(mrb, cRSA, "initialize", mrb_ossl_pkey_rsa_init, MRB_ARGS_ARG(1, 1));
   mrb_define_method(mrb, cRSA, "public_key", mrb_ossl_pkey_rsa_public_key, MRB_ARGS_NONE());
   mrb_define_method(mrb, cRSA, "private?", mrb_ossl_rsa_is_private, MRB_ARGS_NONE());
+  mrb_define_method(mrb, cRSA, "export", ossl_rsa_export, -1);
+  mrb_define_alias(mrb, cRSA, "to_pem", "export");
 
   DEF_OSSL_PKEY_BN(mrb, cRSA, rsa, n);
   DEF_OSSL_PKEY_BN(mrb, cRSA, rsa, e);

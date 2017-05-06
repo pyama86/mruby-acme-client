@@ -17,4 +17,5 @@
     OSSL_Check_Kind((mrb), (obj), cX509Attr); \
     GetX509Attr((mrb), (obj), (attr)); \
 } while (0)
+void Init_ossl_x509attr(mrb_state *mrb);
 X509_ATTRIBUTE *DupX509AttrPtr(mrb_state *mrb, VALUE obj);

@@ -1,5 +1,6 @@
 #ifndef OSSL_PKEY
 #define OSSL_PKEY
+void Init_ossl_rsa(mrb_state *mrb);
 
 #define GetPKeyRSA(mrb, obj, pkey)                                                                 \
   do {                                                                                             \

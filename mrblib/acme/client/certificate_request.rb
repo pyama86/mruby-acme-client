@@ -12,6 +12,15 @@ class Acme::Client::CertificateRequest
     locality_name:       'L'
   }.freeze
 
+  SUBJECT_TYPES = {
+    'CN' => OpenSSL::ASN1::UTF8STRING,
+    'C'  => OpenSSL::ASN1::UTF8STRING,
+    'O'  => OpenSSL::ASN1::UTF8STRING,
+    'OU' => OpenSSL::ASN1::UTF8STRING,
+    'ST' => OpenSSL::ASN1::UTF8STRING,
+    'L'  => OpenSSL::ASN1::UTF8STRING
+  }.freeze
+
   attr_reader :private_key, :common_name, :names, :subject, :csr
 
   def_delegators :@csr, :to_pem, :to_der
@@ -73,5 +82,30 @@ class Acme::Client::CertificateRequest
       add_extension(csr)
       csr.sign @private_key, @digest
     end
+  end
+
+  def generate_subject
+    OpenSSL::X509::Name.new(
+      @subject.map {|name, value|
+        [name, value, SUBJECT_TYPES[name]]
+      }
+    )
+  end
+
+  def add_extension(csr)
+    return if @names.size <= 1
+
+    extension = OpenSSL::X509::ExtensionFactory.new.create_extension(
+      'subjectAltName',
+      @names.map { |name| "DNS:#{name}" }.join(', '),
+      false
+    )
+
+    csr.add_attribute(
+      OpenSSL::X509::Attribute.new(
+        'extReq',
+        OpenSSL::ASN1::Set.new([OpenSSL::ASN1::Sequence.new([extension])])
+      )
+    )
   end
 end

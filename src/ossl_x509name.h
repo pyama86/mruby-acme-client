@@ -26,4 +26,5 @@ extern struct RClass *eX509NameError;
 #define DEFAULT_OBJECT_TYPE(mrb, klass)                                                            \
   mrb_const_get(mrb, klass, mrb_intern_lit(mrb, "DEFAULT_OBJECT_TYPE"))
 
-#define mrb_aref(mrb, obj, key) mrb_funcall((mrb), (obj), mrb_intern_lit((mrb), "[]"), 1, (key))
+#define mrb_aref(mrb, obj, key) mrb_funcall((mrb), (obj), "[]", 1, (key))
+void Init_ossl_x509name(mrb_state *mrb);
