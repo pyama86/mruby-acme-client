@@ -30,7 +30,7 @@ EVP_PKEY *GetPKeyPtr(mrb_state *mrb, mrb_value obj)
 {
   EVP_PKEY *pkey;
 
-  SafeGetPKey(mrb, obj, pkey);
+  SafeGetPKey(obj, pkey);
 
   return pkey;
 }
@@ -49,7 +49,7 @@ static mrb_value mrb_ossl_pkey_sign(mrb_state *mrb, mrb_value self)
 
   mrb_get_args(mrb, "oS", &digest_instance, &data);
 
-  GetPKey(mrb, self, pkey);
+  GetPKey(self, pkey);
 
   mrb_value value_ctx = mrb_iv_get(mrb, digest_instance, mrb_intern_lit(mrb, "ctx"));
   ictx = DATA_PTR(value_ctx);
@@ -79,7 +79,7 @@ mrb_value ossl_pkey_alloc(mrb_state *mrb, mrb_value klass)
   if (!(pkey = EVP_PKEY_new())) {
     mrb_raise(mrb, ePKeyError, NULL);
   }
-  SetPKey(mrb, klass, pkey);
+  SetPKey(klass, pkey);
 
   return klass;
 }
@@ -90,7 +90,7 @@ EVP_PKEY *GetPrivPKeyPtr(mrb_state *mrb, VALUE obj)
   if (!mrb_bool(mrb_funcall(mrb, obj, "private?", 0, NULL))) {
     mrb_raise(mrb, E_ARGUMENT_ERROR, "Private key is needed.");
   }
-  SafeGetPKey(mrb, obj, pkey);
+  SafeGetPKey(obj, pkey);
 
   return pkey;
 }

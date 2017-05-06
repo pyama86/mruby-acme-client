@@ -14,15 +14,15 @@ BIGNUM *GetBNPtr(mrb_state *mrb, VALUE obj)
   VALUE newobj;
 
   if (mrb_obj_is_kind_of(mrb, obj, cBN)) {
-    GetBN(mrb, obj, bn);
+    GetBN(obj, bn);
   } else
     switch (mrb_type(obj)) {
     case MRB_TT_FIXNUM:
-      newobj = NewBN(mrb, cBN); /* GC bug */
+      newobj = NewBN(cBN); /* GC bug */
       if (!BN_dec2bn(&bn, RSTRING_PTR(obj))) {
         mrb_raise(mrb, eBNError, NULL);
       }
-      SetBN(mrb, newobj, bn); /* Handle potencial mem leaks */
+      SetBN(newobj, bn); /* Handle potencial mem leaks */
       break;
     default:
       mrb_raise(mrb, E_TYPE_ERROR, "Cannot convert into OpenSSL::BN");
@@ -36,12 +36,12 @@ mrb_value ossl_bn_new(mrb_state *mrb, const BIGNUM *bn)
   BIGNUM *newbn;
   VALUE obj;
 
-  obj = NewBN(mrb, cBN);
+  obj = NewBN(cBN);
   newbn = bn ? BN_dup(bn) : BN_new();
   if (!newbn) {
     mrb_raise(mrb, eBNError, NULL);
   }
-  SetBN(mrb, obj, newbn);
+  SetBN(obj, newbn);
 
   return obj;
 }
@@ -79,7 +79,7 @@ static VALUE ossl_bn_initialize(mrb_state *mrb, VALUE self)
   if (!(bn = BN_new())) {
     mrb_raise(mrb, eBNError, NULL);
   }
-  SetBN(mrb, self, bn);
+  SetBN(self, bn);
 
   if (mrb_get_args(mrb, "S|i", &str, &bs) == 2) {
     base = NUM2INT(bs);
@@ -108,15 +108,15 @@ static VALUE ossl_bn_initialize(mrb_state *mrb, VALUE self)
   if (mrb_obj_is_kind_of(mrb, str, cBN)) {
     BIGNUM *other;
 
-    GetBN(mrb, self, bn);
-    GetBN(mrb, str, other); /* Safe - we checked kind_of? above */
+    GetBN(self, bn);
+    GetBN(str, other); /* Safe - we checked kind_of? above */
     if (!BN_copy(bn, other)) {
       mrb_raise(mrb, eBNError, NULL);
     }
     return self;
   }
 
-  GetBN(mrb, self, bn);
+  GetBN(self, bn);
   switch (base) {
   case 0:
     if (!BN_mpi2bn((unsigned char *)RSTRING_PTR(str), RSTRING_LEN(str), bn)) {

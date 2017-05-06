@@ -3,7 +3,7 @@ struct RClass *cX509Ext;
 struct RClass *cX509ExtFactory;
 struct RClass *eX509ExtError;
 
-#define MakeX509ExtFactory(mrb, obj, ctx)                                                          \
+#define MakeX509ExtFactory(obj, ctx)                                                          \
   do {                                                                                             \
     if (!((ctx) = OPENSSL_malloc(sizeof(X509V3_CTX))))                                             \
       mrb_raise(mrb, E_RUNTIME_ERROR, "CTX wasn't allocated!");                                    \
@@ -12,13 +12,13 @@ struct RClass *eX509ExtError;
                mrb_obj_value(Data_Wrap_Struct(mrb, mrb->object_class, &ossl_x509extfactory_type,   \
                                               (void *)ctx)));                                      \
   } while (0)
-#define GetX509ExtFactory(mrb, obj, ctx)                                                           \
+#define GetX509ExtFactory(obj, ctx)                                                           \
   do {                                                                                             \
     mrb_value value_ctx = mrb_iv_get(mrb, obj, mrb_intern_lit(mrb, "x509extfactory"));             \
     ctx = DATA_PTR(value_ctx);                                                                     \
   } while (0)
 
-#define SetX509Ext(mrb, obj, ext)                                                                  \
+#define SetX509Ext(obj, ext)                                                                  \
   do {                                                                                             \
     if (!(ext)) {                                                                                  \
       mrb_raise(mrb, E_RUNTIME_ERROR, "EXT wasn't initialized!");                                  \
@@ -28,7 +28,7 @@ struct RClass *eX509ExtError;
         mrb_obj_value(Data_Wrap_Struct(mrb, mrb->object_class, &ossl_x509ext_type, (void *)ext))); \
   } while (0)
 
-#define GetX509Ext(mrb, obj, ctx)                                                                  \
+#define GetX509Ext(obj, ctx)                                                                  \
   do {                                                                                             \
     mrb_value value_ctx = mrb_iv_get(mrb, obj, mrb_intern_lit(mrb, "x509ext"));                    \
     ctx = DATA_PTR(value_ctx);                                                                     \
@@ -51,7 +51,7 @@ static VALUE ossl_x509extfactory_set_issuer_cert(mrb_state *mrb, VALUE self, VAL
 {
   X509V3_CTX *ctx;
 
-  GetX509ExtFactory(mrb, self, ctx);
+  GetX509ExtFactory(self, ctx);
   mrb_iv_set(mrb, self, "@issuer_certificate", cert);
   ctx->issuer_cert = GetX509CertPtr(mrb, cert); /* NO DUP NEEDED */
 
@@ -61,7 +61,7 @@ static VALUE ossl_x509extfactory_set_issuer_cert(mrb_state *mrb, VALUE self, VAL
 static VALUE ossl_x509extfactory_set_subject_cert(mrb_state *mrb, VALUE self, VALUE cert)
 {
   X509V3_CTX *ctx;
-  GetX509ExtFactory(mrb, self, ctx);
+  GetX509ExtFactory(self, ctx);
 
   mrb_iv_set(mrb, self, "@subject_certificate", cert);
   ctx->subject_cert = GetX509CertPtr(mrb, cert); /* NO DUP NEEDED */
@@ -72,7 +72,7 @@ static VALUE ossl_x509extfactory_set_subject_cert(mrb_state *mrb, VALUE self, VA
 static VALUE ossl_x509extfactory_set_subject_req(mrb_state *mrb, VALUE self, VALUE req)
 {
   X509V3_CTX *ctx;
-  GetX509ExtFactory(mrb, self, ctx);
+  GetX509ExtFactory(self, ctx);
   mrb_iv_set(mrb, self, "@subject_request", req);
   ctx->subject_req = GetX509ReqPtr(mrb, req); /* NO DUP NEEDED */
 
@@ -83,7 +83,7 @@ static VALUE ossl_x509extfactory_set_crl(mrb_state *mrb, VALUE self, VALUE crl)
 {
   X509V3_CTX *ctx;
 
-  GetX509ExtFactory(mrb, self, ctx);
+  GetX509ExtFactory(self, ctx);
   mrb_iv_set(mrb, self, "@crl", crl);
   ctx->crl = GetX509CRLPtr(mrb, crl); /* NO DUP NEEDED */
 
@@ -94,7 +94,7 @@ static VALUE ossl_x509extfactory_initialize(mrb_state *mrb, VALUE self)
 {
   VALUE issuer_cert, subject_cert, subject_req, crl;
   X509V3_CTX *ctx;
-  MakeX509ExtFactory(mrb, self, ctx);
+  MakeX509ExtFactory(self, ctx);
   int argc;
   mrb_iv_set(mrb, self, "@config", mrb_nil_value());
 
@@ -119,7 +119,7 @@ static VALUE ossl_x509ext_to_der(mrb_state *mrb, VALUE self)
   long len;
   VALUE str;
 
-  GetX509Ext(mrb, self, ext);
+  GetX509Ext(self, ext);
   if ((len = i2d_X509_EXTENSION(ext, NULL)) <= 0)
     mrb_raise(mrb, eX509ExtError, NULL);
   str = mrb_str_new(mrb, 0, len);
@@ -151,7 +151,7 @@ static VALUE ossl_x509extfactory_create_ext(mrb_state *mrb, VALUE self)
     mrb_raisef(mrb, eX509ExtError, "unknown OID `%s'", RSTRING_PTR(oid));
   valstr = mrb_str_new_cstr(mrb, RTEST(critical) ? "critical," : "");
   mrb_str_append(mrb, valstr, value);
-  GetX509ExtFactory(mrb, self, ctx);
+  GetX509ExtFactory(self, ctx);
 
   obj = mrb_class_new_instance(mrb, 0, NULL, cX509Ext);
   rconf = mrb_iv_get(mrb, self, "@config");
@@ -164,7 +164,7 @@ static VALUE ossl_x509extfactory_create_ext(mrb_state *mrb, VALUE self)
     mrb_raise(mrb, eX509ExtError, NULL);
   }
   NCONF_free(conf);
-  SetX509Ext(mrb, obj, ext);
+  SetX509Ext(obj, ext);
   return obj;
 }
 
@@ -175,7 +175,7 @@ static VALUE ossl_x509ext_init(mrb_state *mrb, VALUE self)
   if (!(ext = X509_EXTENSION_new())) {
     mrb_raise(mrb, eX509ExtError, NULL);
   }
-  SetX509Ext(mrb, self, ext);
+  SetX509Ext(self, ext);
   return self;
 }
 

@@ -1,8 +1,8 @@
 #if !defined(_OSSL_BN_H_)
 #define _OSSL_BN_H_
-#define NewBN(mrb, klass) mrb_obj_value(Data_Wrap_Struct(mrb, klass, &ossl_bn_type, 0))
+#define NewBN(klass) mrb_obj_value(Data_Wrap_Struct(mrb, klass, &ossl_bn_type, 0))
 
-#define SetBN(mrb, obj, bn)                                                                        \
+#define SetBN(obj, bn)                                                                        \
   do {                                                                                             \
     if (!(bn)) {                                                                                   \
       mrb_raise((mrb), E_RUNTIME_ERROR, "BN wasn't initialized!");                                 \
@@ -12,7 +12,7 @@
         mrb_obj_value(Data_Wrap_Struct(mrb, mrb->object_class, &ossl_bn_type, (void *)bn)));       \
   } while (0)
 
-#define GetBN(mrb, obj, bn)                                                                        \
+#define GetBN(obj, bn)                                                                        \
   do {                                                                                             \
     mrb_value value_bn;                                                                            \
     value_bn = mrb_iv_get((mrb), (obj), mrb_intern_lit(mrb, "bn"));                                \

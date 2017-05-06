@@ -21,7 +21,7 @@ static mrb_value ossl_x509name_add_entry(mrb_state *mrb, mrb_value self)
   oid_name = mrb_str_to_cstr(mrb, oid);
   if (mrb_nil_p(type))
     type = mrb_aref(mrb, OBJECT_TYPE_TEMPLATE(mrb, self), oid);
-  GetX509Name(mrb, self, name);
+  GetX509Name(self, name);
   if (!X509_NAME_add_entry_by_txt(name, oid_name, mrb_fixnum(type),
                                   (const unsigned char *)RSTRING_PTR(value), RSTRING_LEN(value), -1,
                                   0)) {
@@ -57,7 +57,7 @@ static mrb_value ossl_x509name_initialize(mrb_state *mrb, mrb_value self)
   if (!(name = X509_NAME_new())) {
     mrb_raise(mrb, eX509NameError, NULL);
   }
-  SetX509Name(mrb, self, name);
+  SetX509Name(self, name);
 
   argc = mrb_get_args(mrb, "|oo", &arg, &template);
   if (argc == 0) {

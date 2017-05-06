@@ -2,9 +2,9 @@
 #define OSSL_PKEY
 void Init_ossl_rsa(mrb_state *mrb);
 
-#define GetPKeyRSA(mrb, obj, pkey)                                                                 \
+#define GetPKeyRSA(obj, pkey)                                                                 \
   do {                                                                                             \
-    GetPKey((mrb), (obj), (pkey));                                                                 \
+    GetPKey((obj), (pkey));                                                                 \
     if (EVP_PKEY_type((pkey)->type) != EVP_PKEY_RSA) { /* PARANOIA? */                             \
       mrb_raise(mrb, E_RUNTIME_ERROR, "THIS IS NOT A RSA!");                                            \
     }                                                                                              \
@@ -31,8 +31,8 @@ mrb_value ossl_rsa_new(mrb_state *mrb, EVP_PKEY *pkey);
     return ossl_bn_new(mrb, bn);                                                                   \
   }
 
-#define DEF_OSSL_PKEY_BN(mrb, class, keytype, name)                                                \
+#define DEF_OSSL_PKEY_BN(class, keytype, name)                                                \
   do {                                                                                             \
-    mrb_define_method((mrb), (class), #name, ossl_##keytype##_get_##name, MRB_ARGS_NONE());        \
+    mrb_define_method(mrb, (class), #name, ossl_##keytype##_get_##name, MRB_ARGS_NONE());        \
   } while (0)
 #endif /* _OSSL_PKEY */

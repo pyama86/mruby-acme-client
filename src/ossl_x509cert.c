@@ -1,12 +1,12 @@
 #include "ossl.h"
 struct RClass *cX509Cert;
 struct RClass *eX509CertError;
-#define GetX509(mrb, obj, x509)                                                                    \
+#define GetX509(obj, x509)                                                                    \
   do {                                                                                             \
     mrb_value value_x509 = mrb_iv_get(mrb, obj, mrb_intern_lit(mrb, "x509"));                      \
     x509 = DATA_PTR(value_x509);                                                                   \
   } while (0)
-#define SetX509(mrb, obj, x509)                                                                    \
+#define SetX509(obj, x509)                                                                    \
   do {                                                                                             \
     if (!(x509)) {                                                                                 \
       mrb_raise((mrb), E_RUNTIME_ERROR, " wasn't initialized!");                                   \
@@ -15,10 +15,10 @@ struct RClass *eX509CertError;
         (mrb), (obj), mrb_intern_lit(mrb, "x509"),                                                 \
         mrb_obj_value(Data_Wrap_Struct(mrb, mrb->object_class, &ossl_x509_type, (void *)x509)));   \
   } while (0)
-#define SafeGetX509(mrb, obj, x509)                                                                \
+#define SafeGetX509(obj, x509)                                                                \
   do {                                                                                             \
     OSSL_Check_Kind((mrb), (obj), cX509Cert);                                                      \
-    GetX509((mrb), (obj), (x509));                                                                 \
+    GetX509((obj), (x509));                                                                 \
   } while (0)
 
 static void ossl_x509_free(mrb_state *mrb, void *ptr)
@@ -32,7 +32,7 @@ X509 *GetX509CertPtr(mrb_state *mrb, VALUE obj)
 {
   X509 *x509;
 
-  SafeGetX509(mrb, obj, x509);
+  SafeGetX509(obj, x509);
 
   return x509;
 }
@@ -61,7 +61,7 @@ static VALUE ossl_x509_initialize(mrb_state *mrb, VALUE self)
     if (!x509)
       mrb_raise(mrb, eX509CertError, NULL);
   }
-  SetX509(mrb, self, x);
+  SetX509(self, x);
 
   return self;
 }
@@ -72,7 +72,7 @@ static VALUE ossl_x509_to_pem(mrb_state *mrb, VALUE self)
   BIO *out;
   VALUE str;
 
-  GetX509(mrb, self, x509);
+  GetX509(self, x509);
   out = BIO_new(BIO_s_mem());
   if (!out)
     mrb_raise(mrb, eX509CertError, NULL);

@@ -18,12 +18,12 @@ static VALUE ossl_x509attr_initialize(mrb_state *mrb, VALUE self)
   if (!(attr = X509_ATTRIBUTE_new()))
     mrb_raise(mrb, eX509AttrError, NULL);
 
-  SetX509Attr(mrb, self, attr);
+  SetX509Attr(self, attr);
   if (mrb_get_args(mrb, "S|o", &oid, &value) == 1) {
     oid = ossl_to_der_if_possible(mrb, oid);
     p = (unsigned char *)RSTRING_PTR(oid);
     x = d2i_X509_ATTRIBUTE(&attr, &p, RSTRING_LEN(oid));
-    SetX509Attr(mrb, self, attr);
+    SetX509Attr(self, attr);
     if (!x) {
       mrb_raise(mrb, eX509AttrError, NULL);
     }
@@ -58,13 +58,13 @@ static VALUE ossl_x509attr_set_value(mrb_state *mrb, VALUE self)
   if (!mrb_type(asn1_value) == MRB_TT_ARRAY)
     mrb_raise(mrb, eASN1Error, "ASN1::Set has non-array value");
 
-  GetX509Attr(mrb, self, attr);
+  GetX509Attr(self, attr);
   if (X509_ATTRIBUTE_count(attr)) { /* populated, reset first */
     ASN1_OBJECT *obj = X509_ATTRIBUTE_get0_object(attr);
     X509_ATTRIBUTE *new_attr = X509_ATTRIBUTE_create_by_OBJ(NULL, obj, 0, NULL, -1);
     if (!new_attr)
       mrb_raise(mrb, eX509AttrError, NULL);
-    SetX509Attr(mrb, self, new_attr);
+    SetX509Attr(self, new_attr);
     X509_ATTRIBUTE_free(attr);
     attr = new_attr;
   }
@@ -87,7 +87,7 @@ static VALUE ossl_x509attr_set_oid(mrb_state *mrb, VALUE self)
   ASN1_OBJECT *obj;
   char *s;
   VALUE oid;
-  GetX509Attr(mrb, self, attr);
+  GetX509Attr(self, attr);
 
   mrb_get_args(mrb, "S", &oid);
   s = mrb_str_to_cstr(mrb, oid);
@@ -113,7 +113,7 @@ static VALUE ossl_x509attr_get_oid(mrb_state *mrb, VALUE self)
   VALUE ret;
   int nid;
 
-  GetX509Attr(mrb, self, attr);
+  GetX509Attr(self, attr);
   oid = X509_ATTRIBUTE_get0_object(attr);
   if ((nid = OBJ_obj2nid(oid)) != NID_undef)
     ret = mrb_str_new_cstr(mrb, OBJ_nid2sn(nid));

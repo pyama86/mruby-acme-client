@@ -4,7 +4,7 @@ struct RClass *cRSA;
 struct RClass *eRSAError;
 #define RSA_HAS_PRIVATE(rsa) ((rsa)->p && (rsa)->q)
 #define OSSL_PKEY_IS_PRIVATE(mrb, obj) (mrb_bool(mrb_iv_get((mrb), (obj), "private")))
-#define RSA_PRIVATE(mrb, obj, rsa) (RSA_HAS_PRIVATE(rsa) || OSSL_PKEY_IS_PRIVATE(mrb, obj))
+#define RSA_PRIVATE(obj, rsa) (RSA_HAS_PRIVATE(rsa) || OSSL_PKEY_IS_PRIVATE(mrb, obj))
 static RSA *rsa_generate(int size, unsigned long exp)
 {
 #if defined(HAVE_RSA_GENERATE_KEY_EX) && HAVE_BN_GENCB
@@ -74,7 +74,7 @@ static mrb_value mrb_ossl_pkey_rsa_init(mrb_state *mrb, mrb_value self)
   char *passwd = NULL;
   mrb_value arg, pass;
 
-  GetPKey(mrb, self, pkey);
+  GetPKey(self, pkey);
   argc = mrb_get_args(mrb, "i|i", &arg, &pass);
   if (mrb_fixnum(arg) == 0) {
     rsa = RSA_new();
@@ -102,7 +102,7 @@ static mrb_value rsa_instance(mrb_state *mrb, struct RClass *klass, RSA *rsa)
     return mrb_nil_value();
   }
 
-  obj = NewPKey(mrb, klass);
+  obj = NewPKey(klass);
   if (!(pkey = EVP_PKEY_new())) {
     return mrb_nil_value();
   }
@@ -110,7 +110,7 @@ static mrb_value rsa_instance(mrb_state *mrb, struct RClass *klass, RSA *rsa)
     EVP_PKEY_free(pkey);
     return mrb_nil_value();
   }
-  SetPKey(mrb, obj, pkey);
+  SetPKey(obj, pkey);
 
   return obj;
 }
@@ -122,11 +122,11 @@ mrb_value ossl_rsa_new(mrb_state *mrb, EVP_PKEY *pkey)
   if (!pkey) {
     obj = rsa_instance(mrb, cRSA, RSA_new());
   } else {
-    obj = NewPKey(mrb, mrb_class_get(mrb, "OpenSSL::PKey::RSA"));
+    obj = NewPKey(mrb_class_get(mrb, "OpenSSL::PKey::RSA"));
     if (EVP_PKEY_type(pkey->type) != EVP_PKEY_RSA) {
       mrb_raise(mrb, E_TYPE_ERROR, "Not a RSA key!");
     }
-    SetPKey(mrb, obj, pkey);
+    SetPKey(obj, pkey);
   }
   if (mrb_nil_p(obj)) {
     mrb_raise(mrb, eRSAError, NULL);
@@ -141,7 +141,7 @@ static mrb_value mrb_ossl_pkey_rsa_public_key(mrb_state *mrb, mrb_value self)
   RSA *rsa;
   mrb_value obj;
 
-  GetPKeyRSA(mrb, self, pkey);
+  GetPKeyRSA(self, pkey);
 
   rsa = RSAPublicKey_dup(pkey->pkey.rsa);
   obj = rsa_instance(mrb, mrb_class(mrb, self), rsa);
@@ -157,8 +157,8 @@ static mrb_value mrb_ossl_pkey_rsa_public_key(mrb_state *mrb, mrb_value self)
 mrb_value mrb_ossl_rsa_is_private(mrb_state *mrb, mrb_value self)
 {
   EVP_PKEY *pkey;
-  GetPKey(mrb, self, pkey);
-  return (RSA_PRIVATE(mrb, self, pkey->pkey.rsa)) ? mrb_bool_value(true) : mrb_bool_value(false);
+  GetPKey(self, pkey);
+  return (RSA_PRIVATE(self, pkey->pkey.rsa)) ? mrb_bool_value(true) : mrb_bool_value(false);
 }
 
 OSSL_PKEY_BN(rsa, n)
@@ -172,7 +172,7 @@ static VALUE ossl_rsa_export(mrb_state *mrb, VALUE self)
   char *passwd = NULL;
   VALUE cipher, pass, str;
 
-  GetPKeyRSA(mrb, self, pkey);
+  GetPKeyRSA(self, pkey);
 
   int argc = mrb_get_args(mrb, "|oo", &cipher, &pass);
 
@@ -211,6 +211,6 @@ void Init_ossl_rsa(mrb_state *mrb)
   mrb_define_method(mrb, cRSA, "export", ossl_rsa_export, -1);
   mrb_define_alias(mrb, cRSA, "to_pem", "export");
 
-  DEF_OSSL_PKEY_BN(mrb, cRSA, rsa, n);
-  DEF_OSSL_PKEY_BN(mrb, cRSA, rsa, e);
+  DEF_OSSL_PKEY_BN(cRSA, rsa, n);
+  DEF_OSSL_PKEY_BN(cRSA, rsa, e);
 }
