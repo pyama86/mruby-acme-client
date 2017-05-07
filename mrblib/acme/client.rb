@@ -1,16 +1,12 @@
 module Acme; end
-module OpenSSL; end
-module OpenSSL::PKey; end
-class OpenSSL::PKey::EC; end
-module OpenSSL::Digest; end
-class OpenSSL::Digest::SHA256; end
-class Acme::Client; end
+class  Acme::Client; end
 module Acme::Client::Resources; end
 module Acme::Client::Resources::Challenges; end
-class Acme::Client::Resources::Challenges::Base; end
-class Acme::Client::Resources::Challenges::DNS01 < Acme::Client::Resources::Challenges::Base; end
-class Acme::Client::Resources::Challenges::HTTP01 < Acme::Client::Resources::Challenges::Base; end
-class Acme::Client::Resources::Challenges::TLSSNI01 < Acme::Client::Resources::Challenges::Base; end
+class  Acme::Client::Resources::Challenges::Base; end
+class  Acme::Client::Resources::Challenges::DNS01 < Acme::Client::Resources::Challenges::Base; end
+class  Acme::Client::Resources::Challenges::HTTP01 < Acme::Client::Resources::Challenges::Base; end
+class  Acme::Client::Resources::Challenges::TLSSNI01 < Acme::Client::Resources::Challenges::Base; end
+class  OpenSSL::PKey::EC; end
 
 class Acme::Client
   DEFAULT_ENDPOINT = 'http://127.0.0.1:4000/'.freeze
@@ -60,11 +56,6 @@ class Acme::Client
       csr: Base64.urlsafe_base64(csr.to_der)
     }
     response = connection.post(@operation_endpoints.fetch('new-cert'), payload)
-
-    File.open('test.pem', 'w'){|fp|
-      fp.puts response.body
-    }
-
     ::Acme::Client::Certificate.new(OpenSSL::X509::Certificate.new(response.body), response.headers['location'], fetch_chain(response), csr)
   end
 

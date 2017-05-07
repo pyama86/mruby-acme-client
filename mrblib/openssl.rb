@@ -1,130 +1,72 @@
 module OpenSSL
-  module Digest
-    class SHA256
-      def digest(token)
-        `printf '%s' '#{token}' | openssl dgst -sha256  -binary`.chomp
-      end
-    end
+  class ASN1Data
+    attr_accessor :value, :tag, :tag_class, :infinite_length
   end
 
-  class BN
-    def initialize(v)
-      @_v = v
-    end
-
-    def to_s(base=2)
-      [@_v.gsub(/\s/, '').gsub(/^(.(.{2})*)$/, "0\\1")].pack "H*"
-    end
+  class Primitive < ASN1Data
+    attr_accessor :tagging
   end
 
-  module PKey
-    class RSA
-      def initialize(length)
-        @_private_key = `openssl genrsa #{length} 2> /dev/null`.chomp
-        th = Tempfile.new 'private_key'
+  class Constructive < ASN1Data
+    attr_accessor :tagging
+  end
 
-        File.open(th.path, 'w'){|fp|
-          fp.puts @_private_key
-        }
-        @_public_key = `openssl rsa -in #{th.path} -pubout 2> /dev/null`.chomp
-        th.close
+  class Config
+    include Enumerable
+    def to_s
+      ary = []
+      @data.keys.sort.each do |section|
+        ary << "[ #{section} ]\n"
+        @data[section].keys.each do |key|
+          ary << "#{key}=#{@data[section][key]}\n"
+        end
+        ary << "\n"
       end
-
-      def public_key
-        self.clone
-      end
-
-      def to_s
-        @_private_key
-      end
-
-      def to_pem
-        @_private_key
-      end
-
-      def e
-        th = Tempfile.new 'private_key'
-        File.open(th.path, 'w'){|fp|
-          fp.puts @_private_key
-        }
-        th.close false
-        OpenSSL::BN.new `printf '%x' "$(openssl rsa -in "#{th.path}" -noout -text | awk '/publicExponent/ {print $2}')"`.chomp
-      end
-
-      def n
-        th = Tempfile.new 'private_key'
-        File.open(th.path, 'w'){|fp|
-          fp.puts @_private_key
-        }
-        th.close false
-        OpenSSL::BN.new `openssl rsa -in "#{th.path}" -noout -modulus | cut -d'=' -f2`
-      end
-
-      def sign(digest, signature_data)
-        th = Tempfile.new 'private_key'
-        File.open(th.path, 'w'){|fp|
-          fp.puts @_private_key
-        }
-        th.close false
-        `printf '%s' "#{signature_data}" | openssl dgst -sha256 -sign "#{th.path}"`.chomp
-      end
+      ary.join
     end
   end
 
   module X509
-    class Request
-      attr_reader :private_key
-      def initialize(common_name, names, private_key)
-        @private_key = private_key
-        th = Tempfile.new 'openssl'
-        File.open(th.path, 'w'){|fp|
-          fp.puts `cat #{`openssl version -d`.split[1].gsub(/"/, '')}/openssl.cnf`.chomp
-          fp.puts "[SAN]"
-          fp.puts "subjectAltName=#{names.map { |name| "DNS:#{name}" }.join(', ')}"
-        }
-        ph = Tempfile.new 'private_key'
-        File.open(ph.path, 'w'){|fp|
-          fp.puts private_key.to_s
-        }
-        @csr = `openssl req -new -sha256 -key #{ph.path}  -subj "/CN=#{common_name}/" -reqexts SAN -config "#{th.path}"`.chomp
+    class ExtensionFactory
+      def create_extension(*arg)
+        if arg.size > 1
+          create_ext(*arg)
+        else
+          send("create_ext_from_"+arg[0].class.name.downcase, arg[0])
+        end
       end
 
-      def to_der
-        th = Tempfile.new 'csr'
-        File.open(th.path, 'w'){|fp|
-          fp.puts @csr
-        }
-        `openssl req -in "#{th.path}" -inform PEM -outform DER`.chomp
+      def create_ext_from_array(ary)
+        raise ExtensionError, "unexpected array form" if ary.size > 3
+        create_ext(ary[0], ary[1], ary[2])
       end
 
-      def to_pem
-        th = Tempfile.new 'csr'
-        File.open(th.path, 'w'){|fp|
-          fp.puts @csr
-        }
-        `openssl req -in "#{th.path}" -outform PEM`.chomp
+      def create_ext_from_string(str) # "oid = critical, value"
+        oid, value = str.split(/=/, 2)
+        oid.strip!
+        value.strip!
+        create_ext(oid, value)
       end
 
-      def to_pem
-        th = Tempfile.new 'csr'
-        File.open(th.path, 'w'){|fp|
-          fp.puts @csr
-        }
-        `openssl req -in "#{th.path}" -inform PEM -outform PEM`.chomp
+      def create_ext_from_hash(hash)
+        create_ext(hash["oid"], hash["value"], hash["critical"])
       end
     end
 
-    class Certificate
-      def initialize(body)
-        @body = body
+    class Extension
+      def to_s # "oid = critical, value"
+        str = self.oid
+        str << " = "
+        str << "critical, " if self.critical?
+        str << self.value.gsub(/\n/, ", ")
       end
 
-      def to_pem
-        th = Tempfile.new 'csr'
-        File.open(th.path, 'w'){|fp|
-          fp.puts @body
-        }
-        `openssl x509 -in #{th.path} -text -noout -inform der`
+      def to_h # {"oid"=>sn|ln, "value"=>value, "critical"=>true|false}
+        {"oid"=>self.oid,"value"=>self.value,"critical"=>self.critical?}
+      end
+
+      def to_a
+        [ self.oid, self.value, self.critical? ]
       end
     end
   end
