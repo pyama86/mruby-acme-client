@@ -14,14 +14,5 @@ MRuby::Gem::Specification.new('mruby-acme-client') do |spec|
   spec.add_dependency 'mruby-digest'
   spec.add_dependency 'mruby-httprequest'
   spec.add_dependency 'mruby-base64'
-#  build_dependency if ENV["BUILD_SSL_DEPENDENCY"]
-#  spec.cc.include_paths << "#{build.root}/src"
-#  spec.linker.libraries << 'crypto' unless RUBY_PLATFORM =~ /darwin/
-  spec.cc.include_paths = [
-    "/home/pyama/src/github.com/pyama86/mruby-acme-client/mruby/include",
-    "/opt/openssl/include",
-    "/usr/lib/include"
-  ]
-  spec.linker.library_paths = "/opt/openssl/lib"
 end
 
