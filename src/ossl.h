@@ -2,9 +2,16 @@
 
 #if !defined(_OSSL_H_)
 #define _OSSL_H_
-#include <mruby.h>
-#include <mruby/class.h>
-#include <mruby/data.h>
+#include "mruby.h"
+#include "mruby/class.h"
+#include "mruby/data.h"
+#include "mruby/compile.h"
+#include "mruby/data.h"
+#include "mruby/hash.h"
+#include "mruby/array.h"
+#include "mruby/object.h"
+#include "mruby/string.h"
+#include "mruby/variable.h"
 #include <stdbool.h>
 #include <string.h>
 
@@ -18,13 +25,6 @@ mrb_value ossl_buf2str(mrb_state *mrb, char *buf, int len);
 mrb_value ossl_fetch_error();
 
 int ossl_pem_passwd_cb(char *buf, int max_len, int flag, void *pwd);
-#include <mruby/compile.h>
-#include <mruby/data.h>
-#include <mruby/hash.h>
-#include <mruby/array.h>
-#include <mruby/object.h>
-#include <mruby/string.h>
-#include <mruby/variable.h>
 
 #include <openssl/opensslv.h>
 
