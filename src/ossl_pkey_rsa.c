@@ -75,10 +75,10 @@ static mrb_value mrb_ossl_pkey_rsa_init(mrb_state *mrb, mrb_value self)
   mrb_value arg, pass;
 
   GetPKey(self, pkey);
-  argc = mrb_get_args(mrb, "i|i", &arg, &pass);
-  if (mrb_fixnum(arg) == 0) {
+  argc = mrb_get_args(mrb, "o|o", &arg, &pass);
+  if (mrb_fixnum_p(arg) && mrb_fixnum(arg) == 0) {
     rsa = RSA_new();
-  } else if (mrb_fixnum(arg)) {
+  } else if (mrb_fixnum_p(arg)) {
     rsa = rsa_generate(mrb_fixnum(arg), argc == 1 ? RSA_F4 : (unsigned)mrb_fixnum(pass));
     if (!rsa)
       mrb_raise(mrb, eRSAError, NULL);
