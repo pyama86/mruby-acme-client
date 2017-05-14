@@ -83,7 +83,34 @@ static mrb_value mrb_ossl_pkey_rsa_init(mrb_state *mrb, mrb_value self)
     if (!rsa)
       mrb_raise(mrb, eRSAError, NULL);
   } else {
-    mrb_raise(mrb, eRSAError, "unsupported interface");
+    arg = ossl_to_der_if_possible(mrb, arg);
+    in = ossl_obj2bio(mrb, arg);
+    rsa = PEM_read_bio_RSAPrivateKey(in, NULL, ossl_pem_passwd_cb, passwd);
+    if (!rsa) {
+      OSSL_BIO_reset(in);
+      rsa = PEM_read_bio_RSA_PUBKEY(in, NULL, NULL, NULL);
+    }
+    if (!rsa) {
+      OSSL_BIO_reset(in);
+      rsa = d2i_RSAPrivateKey_bio(in, NULL);
+    }
+    if (!rsa) {
+      OSSL_BIO_reset(in);
+      rsa = d2i_RSA_PUBKEY_bio(in, NULL);
+    }
+    if (!rsa) {
+      OSSL_BIO_reset(in);
+      rsa = PEM_read_bio_RSAPublicKey(in, NULL, NULL, NULL);
+    }
+    if (!rsa) {
+      OSSL_BIO_reset(in);
+      rsa = d2i_RSAPublicKey_bio(in, NULL);
+    }
+    BIO_free(in);
+    if (!rsa) {
+      mrb_raise(mrb, eRSAError, "Neither PUB key nor PRIV key");
+    }
+
   }
 
   if (!EVP_PKEY_assign_RSA(pkey, rsa)) {
@@ -161,7 +188,7 @@ mrb_value mrb_ossl_rsa_is_private(mrb_state *mrb, mrb_value self)
   return (RSA_PRIVATE(self, pkey->pkey.rsa)) ? mrb_bool_value(true) : mrb_bool_value(false);
 }
 
-OSSL_PKEY_BN(rsa, n)
+  OSSL_PKEY_BN(rsa, n)
 OSSL_PKEY_BN(rsa, e)
 
 static VALUE ossl_rsa_export(mrb_state *mrb, VALUE self)
@@ -184,7 +211,7 @@ static VALUE ossl_rsa_export(mrb_state *mrb, VALUE self)
   }
   if (RSA_HAS_PRIVATE(pkey->pkey.rsa)) {
     if (!PEM_write_bio_RSAPrivateKey(out, pkey->pkey.rsa, ciph, NULL, 0, ossl_pem_passwd_cb,
-                                     passwd)) {
+          passwd)) {
       BIO_free(out);
       mrb_raise(mrb, eRSAError, NULL);
     }
