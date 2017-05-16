@@ -96,6 +96,7 @@ void Init_ossl_x509name(mrb_state *mrb)
 {
   eX509NameError = mrb_define_class_under(mrb, mX509, "NameError", eOSSLError);
   cX509Name = mrb_define_class_under(mrb, mX509, "Name", mrb->object_class);
+  MRB_SET_INSTANCE_TT(cX509Name, MRB_TT_DATA);
   mrb_define_method(mrb, cX509Name, "initialize", ossl_x509name_initialize, MRB_ARGS_OPT(2));
   mrb_define_method(mrb, cX509Name, "add_entry", ossl_x509name_add_entry, MRB_ARGS_ARG(2, 1));
 }

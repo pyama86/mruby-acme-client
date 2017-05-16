@@ -3,8 +3,7 @@ extern struct RClass *cX509Name;
 extern struct RClass *eX509NameError;
 #define GetX509Name(obj, name)                                                                \
   do {                                                                                             \
-    mrb_value value_name = mrb_iv_get(mrb, obj, mrb_intern_lit(mrb, "x509name"));                  \
-    name = DATA_PTR(value_name);                                                                   \
+    name = DATA_PTR(obj);                                                                   \
   } while (0)
 
 #define SetX509Name(obj, name)                                                                \
@@ -12,9 +11,8 @@ extern struct RClass *eX509NameError;
     if (!(name)) {                                                                                 \
       mrb_raise((mrb), E_RUNTIME_ERROR, "Name wasn't initialized!");                               \
     }                                                                                              \
-    mrb_iv_set((mrb), (obj), mrb_intern_lit(mrb, "x509name"),                                      \
-               mrb_obj_value(                                                                      \
-                   Data_Wrap_Struct(mrb, mrb->object_class, &ossl_x509name_type, (void *)name)));  \
+    DATA_PTR(obj) = name; \
+    DATA_TYPE(obj) = &ossl_x509name_type; \
   } while (0)
 #define SafeGetX509Name(obj, name)                                                            \
   do {                                                                                             \
