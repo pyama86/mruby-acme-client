@@ -54,8 +54,7 @@ static mrb_value mrb_ossl_bn_to_s(mrb_state *mrb, mrb_value self)
 
   mrb_get_args(mrb, "i", &base);
 
-  value_bn = mrb_iv_get(mrb, self, mrb_intern_lit(mrb, "bn"));
-  bn = DATA_PTR(value_bn);
+  bn = DATA_PTR(self);
 
   switch (base) {
   case 2:
@@ -149,6 +148,7 @@ void Init_ossl_bn(mrb_state *mrb)
   eBNError = mrb_define_class_under(mrb, mOSSL, "BNError", eOSSLError);
 
   cBN = mrb_define_class_under(mrb, mOSSL, "BN", mrb->object_class);
+  MRB_SET_INSTANCE_TT(cBN, MRB_TT_DATA);
   mrb_define_method(mrb, cBN, "initialize", ossl_bn_initialize, MRB_ARGS_ARG(1, 1));
 
   mrb_define_method(mrb, cBN, "to_s", mrb_ossl_bn_to_s, MRB_ARGS_REQ(1));

@@ -124,6 +124,7 @@ void Init_ossl_x509attr(mrb_state *mrb)
   eX509AttrError = mrb_define_class_under(mrb, mX509, "AttributeError", eOSSLError);
 
   cX509Attr = mrb_define_class_under(mrb, mX509, "Attribute", mrb->object_class);
+  MRB_SET_INSTANCE_TT(cX509Attr, MRB_TT_DATA);
   mrb_define_method(mrb, cX509Attr, "initialize", ossl_x509attr_initialize, MRB_ARGS_ARG(1, 1));
   mrb_define_method(mrb, cX509Attr, "oid=", ossl_x509attr_set_oid, MRB_ARGS_REQ(1));
   mrb_define_method(mrb, cX509Attr, "oid", ossl_x509attr_get_oid, MRB_ARGS_NONE());

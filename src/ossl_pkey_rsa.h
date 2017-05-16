@@ -23,8 +23,7 @@ mrb_value ossl_rsa_new(mrb_state *mrb, EVP_PKEY *pkey);
     mrb_value value_pkey;                                                                          \
     BIGNUM *bn;                                                                                    \
                                                                                                    \
-    value_pkey = mrb_iv_get(mrb, self, mrb_intern_lit(mrb, "pkey"));                               \
-    pkey = DATA_PTR(value_pkey);                                                                   \
+    pkey = DATA_PTR(self);                                                                   \
     bn = pkey->pkey.keytype->name;                                                                 \
     if (bn == NULL)                                                                                \
       return mrb_nil_value();                                                                      \

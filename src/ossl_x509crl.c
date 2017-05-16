@@ -1,8 +1,7 @@
 #include "ossl.h"
 #define GetX509CRL(obj, crl)                                                                  \
   do {                                                                                             \
-    mrb_value value_crl = mrb_iv_get(mrb, obj, mrb_intern_lit(mrb, "x509crl"));                    \
-    crl = DATA_PTR(value_crl);                                                                     \
+    crl = DATA_PTR(obj);                                                                     \
   } while (0)
 
 #define SafeGetX509CRL(obj, crl)                                                              \

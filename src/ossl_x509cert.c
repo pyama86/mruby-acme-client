@@ -3,17 +3,15 @@ struct RClass *cX509Cert;
 struct RClass *eX509CertError;
 #define GetX509(obj, x509)                                                                    \
   do {                                                                                             \
-    mrb_value value_x509 = mrb_iv_get(mrb, obj, mrb_intern_lit(mrb, "x509"));                      \
-    x509 = DATA_PTR(value_x509);                                                                   \
+    x509 = DATA_PTR(obj);                                                                   \
   } while (0)
 #define SetX509(obj, x509)                                                                    \
   do {                                                                                             \
     if (!(x509)) {                                                                                 \
       mrb_raise((mrb), E_RUNTIME_ERROR, " wasn't initialized!");                                   \
     }                                                                                              \
-    mrb_iv_set(                                                                                    \
-        (mrb), (obj), mrb_intern_lit(mrb, "x509"),                                                 \
-        mrb_obj_value(Data_Wrap_Struct(mrb, mrb->object_class, &ossl_x509_type, (void *)x509)));   \
+    DATA_PTR(obj) = x509; \
+    DATA_TYPE(obj) = &ossl_x509_type; \
   } while (0)
 #define SafeGetX509(obj, x509)                                                                \
   do {                                                                                             \
@@ -90,6 +88,7 @@ void Init_ossl_x509cert(mrb_state *mrb)
 {
   eX509CertError = mrb_define_class_under(mrb, mX509, "CertificateError", eOSSLError);
   cX509Cert = mrb_define_class_under(mrb, mX509, "Certificate", mrb->object_class);
+  MRB_SET_INSTANCE_TT(cX509Cert, MRB_TT_DATA);
   mrb_define_method(mrb, cX509Cert, "initialize", ossl_x509_initialize, MRB_ARGS_OPT(1));
   mrb_define_method(mrb, cX509Cert, "to_pem", ossl_x509_to_pem, 0);
 }
