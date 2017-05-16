@@ -51,8 +51,7 @@ static mrb_value mrb_ossl_pkey_sign(mrb_state *mrb, mrb_value self)
 
   GetPKey(self, pkey);
 
-  mrb_value value_ctx = mrb_iv_get(mrb, digest_instance, mrb_intern_lit(mrb, "ctx"));
-  ictx = DATA_PTR(value_ctx);
+  ictx = DATA_PTR(digest_instance);
 
   EVP_SignInit(&ctx, ictx->digest);
   EVP_SignUpdate(&ctx, RSTRING_PTR(data), RSTRING_LEN(data));

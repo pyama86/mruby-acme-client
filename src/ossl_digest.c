@@ -1,24 +1,22 @@
 #include "ossl.h"
 
-#define GetDigest(obj, ctx)                                                                   \
+#define GetDigest(obj, ctx)                                                                        \
   do {                                                                                             \
-    mrb_value value_ctx = mrb_iv_get(mrb, obj, mrb_intern_lit(mrb, "ctx"));                        \
-    ctx = DATA_PTR(value_ctx);                                                                     \
+    ctx = DATA_PTR(obj);                                                                           \
   } while (0)
-#define SafeGetDigest(obj, ctx)                                                               \
+#define SafeGetDigest(obj, ctx)                                                                    \
   do {                                                                                             \
     OSSL_Check_Kind((mrb), (obj), cDigest);                                                        \
     GetDigest((mrb), (obj), (ctx));                                                                \
   } while (0)
 
-#define SetDigest(obj, digest)                                                                \
+#define SetDigest(obj, digest)                                                                     \
   do {                                                                                             \
     if (!(digest)) {                                                                               \
       mrb_raise(mrb, E_RUNTIME_ERROR, "Digest  wasn't initialized!");                              \
     }                                                                                              \
-    mrb_iv_set((mrb), (obj), mrb_intern_lit(mrb, "ctx"),                                           \
-               mrb_obj_value(                                                                      \
-                   Data_Wrap_Struct(mrb, mrb->object_class, &ossl_digest_type, (void *)digest)));  \
+    DATA_PTR(obj) = digest;                                                            \
+    DATA_TYPE(obj) = &ossl_digest_type;                                                            \
   } while (0)
 const EVP_MD *GetDigestPtr(mrb_state *mrb, VALUE obj)
 {
@@ -73,8 +71,7 @@ mrb_value mrb_ossl_digest_sha256_digest(mrb_state *mrb, mrb_value self)
   unsigned char buffer[SHA256_DIGEST_LENGTH];
   mrb_get_args(mrb, "z", &src);
 
-  mrb_value value_ctx = mrb_iv_get(mrb, self, mrb_intern_lit(mrb, "ctx"));
-  ctx = DATA_PTR(value_ctx);
+  ctx = DATA_PTR(self);
 
   if (!ctx) {
     ctx = ctx_new(mrb);
@@ -106,6 +103,8 @@ void Init_ossl_digest(mrb_state *mrb)
   eDigestError = mrb_define_class_under(mrb, mDigest, "DigestError", eOSSLError);
 
   ossl_digest_sha256 = mrb_define_class_under(mrb, mDigest, "SHA256", mrb->object_class);
+  MRB_SET_INSTANCE_TT(ossl_digest_sha256, MRB_TT_DATA);
+
   mrb_define_method(mrb, ossl_digest_sha256, "initialize", mrb_ossl_digest_sha256_init,
                     MRB_ARGS_NONE());
   mrb_define_method(mrb, ossl_digest_sha256, "digest", mrb_ossl_digest_sha256_digest,
