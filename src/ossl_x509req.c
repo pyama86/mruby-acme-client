@@ -7,15 +7,12 @@ struct RClass *cX509Req;
     if (!(req)) {                                                                                  \
       mrb_raise((mrb), E_RUNTIME_ERROR, "Req wasn't initialized!");                                \
     }                                                                                              \
-    mrb_iv_set((mrb), (obj), mrb_intern_lit(mrb, "x509req"),                                       \
-               mrb_obj_value(Data_Wrap_Struct(mrb, mrb->object_class, &ossl_x509_request_type,     \
-                                              (void *)req)));                                      \
+    DATA_PTR(obj) = req; \
+    DATA_TYPE(obj) = &ossl_x509_request_type; \
   } while (0)
 #define GetX509Req(obj, req)                                                                  \
   do {                                                                                             \
-    mrb_value value_req;                                                                           \
-    value_req = mrb_iv_get((mrb), (obj), mrb_intern_lit(mrb, "x509req"));                          \
-    req = DATA_PTR(value_req);                                                                     \
+    req = DATA_PTR(obj);                          \
   } while (0)
 
 #define SafeGetX509Req(obj, req)                                                              \
@@ -196,6 +193,7 @@ void Init_ossl_x509req(mrb_state *mrb)
   eX509ReqError = mrb_define_class_under(mrb, mX509, "RequestError", eOSSLError);
 
   cX509Req = mrb_define_class_under(mrb, mX509, "Request", mrb->object_class);
+  MRB_SET_INSTANCE_TT(cX509Req, MRB_TT_DATA);
   mrb_define_method(mrb, cX509Req, "initialize", ossl_x509req_initialize, MRB_ARGS_OPT(1));
   mrb_define_method(mrb, cX509Req, "public_key=", ossl_x509req_set_public_key, MRB_ARGS_REQ(1));
   mrb_define_method(mrb, cX509Req, "subject=", ossl_x509req_set_subject, MRB_ARGS_REQ(1));
