@@ -3,35 +3,31 @@ struct RClass *cX509Ext;
 struct RClass *cX509ExtFactory;
 struct RClass *eX509ExtError;
 
-#define MakeX509ExtFactory(obj, ctx)                                                          \
+#define MakeX509ExtFactory(obj, ctx)                                                               \
   do {                                                                                             \
     if (!((ctx) = OPENSSL_malloc(sizeof(X509V3_CTX))))                                             \
       mrb_raise(mrb, E_RUNTIME_ERROR, "CTX wasn't allocated!");                                    \
     X509V3_set_ctx((ctx), NULL, NULL, NULL, NULL, 0);                                              \
-    mrb_iv_set((mrb), (obj), mrb_intern_lit(mrb, "x509extfactory"),                                \
-               mrb_obj_value(Data_Wrap_Struct(mrb, mrb->object_class, &ossl_x509extfactory_type,   \
-                                              (void *)ctx)));                                      \
+    DATA_PTR(obj) = ctx;                                                                           \
+    DATA_TYPE(obj) = &ossl_x509extfactory_type;                                                    \
   } while (0)
-#define GetX509ExtFactory(obj, ctx)                                                           \
+#define GetX509ExtFactory(obj, ctx)                                                                \
   do {                                                                                             \
-    mrb_value value_ctx = mrb_iv_get(mrb, obj, mrb_intern_lit(mrb, "x509extfactory"));             \
-    ctx = DATA_PTR(value_ctx);                                                                     \
+    ctx = DATA_PTR(obj);                                                                           \
   } while (0)
 
-#define SetX509Ext(obj, ext)                                                                  \
+#define SetX509Ext(obj, ext)                                                                       \
   do {                                                                                             \
     if (!(ext)) {                                                                                  \
       mrb_raise(mrb, E_RUNTIME_ERROR, "EXT wasn't initialized!");                                  \
     }                                                                                              \
-    mrb_iv_set(                                                                                    \
-        (mrb), (obj), mrb_intern_lit(mrb, "x509ext"),                                              \
-        mrb_obj_value(Data_Wrap_Struct(mrb, mrb->object_class, &ossl_x509ext_type, (void *)ext))); \
+    DATA_PTR(obj) = ext;                                                                           \
+    DATA_TYPE(obj) = &ossl_x509ext_type;                                                           \
   } while (0)
 
-#define GetX509Ext(obj, ctx)                                                                  \
+#define GetX509Ext(obj, ctx)                                                                       \
   do {                                                                                             \
-    mrb_value value_ctx = mrb_iv_get(mrb, obj, mrb_intern_lit(mrb, "x509ext"));                    \
-    ctx = DATA_PTR(value_ctx);                                                                     \
+    ctx = DATA_PTR(obj);                                                                           \
   } while (0)
 
 static void ossl_x509extfactory_free(mrb_state *mrb, void *ctx)
@@ -183,11 +179,14 @@ void Init_ossl_x509ext(mrb_state *mrb)
 {
   eX509ExtError = mrb_define_class_under(mrb, mX509, "ExtensionError", eOSSLError);
   cX509ExtFactory = mrb_define_class_under(mrb, mX509, "ExtensionFactory", mrb->object_class);
+  MRB_SET_INSTANCE_TT(cX509ExtFactory, MRB_TT_DATA);
   mrb_define_method(mrb, cX509ExtFactory, "initialize", ossl_x509extfactory_initialize,
                     MRB_ARGS_OPT(4));
-  mrb_define_method(mrb, cX509ExtFactory, "create_ext", ossl_x509extfactory_create_ext, MRB_ARGS_ARG(2, 1));
+  mrb_define_method(mrb, cX509ExtFactory, "create_ext", ossl_x509extfactory_create_ext,
+                    MRB_ARGS_ARG(2, 1));
 
   cX509Ext = mrb_define_class_under(mrb, mX509, "Extension", mrb->object_class);
+  MRB_SET_INSTANCE_TT(cX509Ext, MRB_TT_DATA);
   mrb_define_method(mrb, cX509Ext, "initialize", ossl_x509ext_init, MRB_ARGS_NONE());
   mrb_define_method(mrb, cX509Ext, "to_der", ossl_x509ext_to_der, MRB_ARGS_NONE());
 }
