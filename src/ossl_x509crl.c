@@ -1,3 +1,5 @@
+
+//LICENSE: https://github.com/ruby/openssl/blob/master/LICENSE.txt
 #include "ossl.h"
 #define GetX509CRL(obj, crl)                                                                  \
   do {                                                                                             \

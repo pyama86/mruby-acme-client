@@ -1,3 +1,5 @@
+
+//LICENSE: https://github.com/ruby/openssl/blob/master/LICENSE.txt
 #include "ossl.h"
 struct RClass *cX509Ext;
 struct RClass *cX509ExtFactory;

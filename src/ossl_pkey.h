@@ -1,3 +1,5 @@
+
+//LICENSE: https://github.com/ruby/openssl/blob/master/LICENSE.txt
 #if !defined(_OSSL_PKEY_H_)
 #define _OSSL_PKEY_H_
 extern struct RClass *cPKey;

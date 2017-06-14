@@ -1,4 +1,6 @@
 
+//LICENSE: https://github.com/ruby/openssl/blob/master/LICENSE.txt
+
 extern struct RClass *cX509Name;
 extern struct RClass *eX509NameError;
 #define GetX509Name(obj, name)                                                                \

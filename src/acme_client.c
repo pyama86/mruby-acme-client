@@ -1,3 +1,4 @@
+// LICENCE: https://github.com/ruby/openssl/blob/master/LICENSE.txt
 #include "ossl.h"
 void mrb_init_ossl(mrb_state *mrb);
 void mrb_init_ossl_x509(mrb_state *mrb);

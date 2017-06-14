@@ -1,3 +1,5 @@
+
+//LICENSE: https://github.com/ruby/openssl/blob/master/LICENSE.txt
 #if !defined(_OSSL_BIO_H_)
 #define _OSSL_BIO_H_
 

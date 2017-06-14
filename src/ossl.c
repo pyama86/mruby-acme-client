@@ -1,4 +1,5 @@
 #include "ossl.h"
+// LICENCE: https://github.com/ruby/openssl/blob/master/LICENSE.txt
 
 struct RClass *eOSSLError;
 struct RClass *mOSSL;

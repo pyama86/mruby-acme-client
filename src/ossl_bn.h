@@ -1,3 +1,5 @@
+
+//LICENSE: https://github.com/ruby/openssl/blob/master/LICENSE.txt
 #if !defined(_OSSL_BN_H_)
 #define _OSSL_BN_H_
 #define NewBN(klass) mrb_obj_value(Data_Wrap_Struct(mrb, klass, &ossl_bn_type, 0))

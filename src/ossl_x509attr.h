@@ -1,3 +1,5 @@
+
+//LICENSE: https://github.com/ruby/openssl/blob/master/LICENSE.txt
 #define SetX509Attr(obj, attr) do { \
     if (!(attr)) { \
       mrb_raise((mrb), E_RUNTIME_ERROR, "ATTR wasn't initialized!");                               \

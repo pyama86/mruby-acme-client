@@ -1,6 +1,6 @@
 # mruby-acme-client   [![Build Status](https://travis-ci.org/pyama86/mruby-acme-client.svg?branch=master)](https://travis-ci.org/pyama86/mruby-acme-client)
 It is a clone of https://github.com/unixcharles/acme-client
-
+For openssl we refer to Ruby's implementation. [ruby/openssl](https://github.com/ruby/openssl)
 ## install by mrbgems
 - add conf.gem line to `build_config.rb`
 

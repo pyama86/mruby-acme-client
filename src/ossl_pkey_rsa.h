@@ -1,3 +1,5 @@
+
+//LICENSE: https://github.com/ruby/openssl/blob/master/LICENSE.txt
 #ifndef OSSL_PKEY
 #define OSSL_PKEY
 void Init_ossl_rsa(mrb_state *mrb);
