@@ -45,7 +45,6 @@ int ossl_pem_passwd_cb(char *buf, int max_len, int flag, void *pwd);
 #endif
 #include <errno.h>
 #include <openssl/err.h>
-#include <openssl/asn1_mac.h>
 #include <openssl/x509v3.h>
 #include <openssl/ssl.h>
 #include <openssl/pkcs12.h>
