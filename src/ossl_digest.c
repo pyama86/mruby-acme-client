@@ -2,10 +2,6 @@
 //LICENSE: https://github.com/ruby/openssl/blob/master/LICENSE.txt
 #include "ossl.h"
 
-#define GetDigest(obj, ctx)                                                                        \
-  do {                                                                                             \
-    ctx = DATA_PTR(obj);                                                                           \
-  } while (0)
 #define SafeGetDigest(obj, ctx)                                                                    \
   do {                                                                                             \
     OSSL_Check_Kind((mrb), (obj), cDigest);                                                        \

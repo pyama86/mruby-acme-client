@@ -4,12 +4,34 @@
 
 struct RClass *cRSA;
 struct RClass *eRSAError;
+
+#if (OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined LIBRESSL_VERSION_NUMBER)
+static inline int
+RSA_HAS_PRIVATE(RSA *rsa)
+{
+    const BIGNUM *p, *q;
+
+    RSA_get0_factors(rsa, &p, &q);
+    return p && q; /* d? why? */
+}
+
+#define GetRSA(obj, rsa) do { \
+    EVP_PKEY *_pkey; \
+    GetPKeyRSA((obj), _pkey); \
+    (rsa) = EVP_PKEY_get0_RSA(_pkey); \
+} while (0)
+
+#else
 #define RSA_HAS_PRIVATE(rsa) ((rsa)->p && (rsa)->q)
+#endif
+
 #define OSSL_PKEY_IS_PRIVATE(mrb, obj) (mrb_bool(mrb_iv_get((mrb), (obj), "private")))
 #define RSA_PRIVATE(obj, rsa) (RSA_HAS_PRIVATE(rsa) || OSSL_PKEY_IS_PRIVATE(mrb, obj))
+
 static RSA *rsa_generate(int size, unsigned long exp)
 {
 #if defined(HAVE_RSA_GENERATE_KEY_EX) && HAVE_BN_GENCB
+
   int i;
   BN_GENCB cb;
   struct ossl_generate_cb_arg cb_arg;
@@ -146,14 +168,20 @@ static mrb_value rsa_instance(mrb_state *mrb, struct RClass *klass, RSA *rsa)
 mrb_value ossl_rsa_new(mrb_state *mrb, EVP_PKEY *pkey)
 {
   mrb_value obj;
+  int type;
 
   if (!pkey) {
     obj = rsa_instance(mrb, cRSA, RSA_new());
   } else {
     obj = NewPKey(mrb_class_get(mrb, "OpenSSL::PKey::RSA"));
+#if (OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined LIBRESSL_VERSION_NUMBER)
+    if (EVP_PKEY_base_id(pkey) != EVP_PKEY_RSA) {
+#else
     if (EVP_PKEY_type(pkey->type) != EVP_PKEY_RSA) {
+#endif
       mrb_raise(mrb, E_TYPE_ERROR, "Not a RSA key!");
     }
+
     SetPKey(obj, pkey);
   }
   if (mrb_nil_p(obj)) {
@@ -171,7 +199,12 @@ static mrb_value mrb_ossl_pkey_rsa_public_key(mrb_state *mrb, mrb_value self)
 
   GetPKeyRSA(self, pkey);
 
+#if (OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined LIBRESSL_VERSION_NUMBER)
+  rsa = RSAPublicKey_dup(EVP_PKEY_get0_RSA(pkey));
+#else
   rsa = RSAPublicKey_dup(pkey->pkey.rsa);
+#endif
+
   obj = rsa_instance(mrb, mrb_class(mrb, self), rsa);
 
   if (mrb_nil_p(obj)) {
@@ -186,11 +219,21 @@ mrb_value mrb_ossl_rsa_is_private(mrb_state *mrb, mrb_value self)
 {
   EVP_PKEY *pkey;
   GetPKey(self, pkey);
+#if (OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined LIBRESSL_VERSION_NUMBER)
+  RSA *rsa;
+  GetRSA(self, rsa);
+  return RSA_PRIVATE(self, rsa)  ? mrb_bool_value(true) : mrb_bool_value(false);
+#else
   return (RSA_PRIVATE(self, pkey->pkey.rsa)) ? mrb_bool_value(true) : mrb_bool_value(false);
+#endif
 }
 
+#if (OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined LIBRESSL_VERSION_NUMBER)
+OSSL_PKEY_BN_DEF3(rsa, RSA, key, n, e, d)
+#else
 OSSL_PKEY_BN(rsa, n)
 OSSL_PKEY_BN(rsa, e)
+#endif
 
 static VALUE ossl_rsa_export(mrb_state *mrb, VALUE self)
 {
@@ -210,14 +253,27 @@ static VALUE ossl_rsa_export(mrb_state *mrb, VALUE self)
   if (!(out = BIO_new(BIO_s_mem()))) {
     mrb_raise(mrb, eRSAError, NULL);
   }
+#if (OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined LIBRESSL_VERSION_NUMBER)
+
+  RSA *rsa;
+  etRSA(self, rsa);
+  if (RSA_HAS_PRIVATE(rsa)) {
+    if (!PEM_write_bio_RSAPrivateKey(out, rsa, ciph, NULL, 0, ossl_pem_passwd_cb,
+                                     passwd)) {
+#else
   if (RSA_HAS_PRIVATE(pkey->pkey.rsa)) {
     if (!PEM_write_bio_RSAPrivateKey(out, pkey->pkey.rsa, ciph, NULL, 0, ossl_pem_passwd_cb,
                                      passwd)) {
+#endif
       BIO_free(out);
       mrb_raise(mrb, eRSAError, NULL);
     }
   } else {
+#if (OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined LIBRESSL_VERSION_NUMBER)
+    if (!PEM_write_bio_RSA_PUBKEY(out, rsa)) {
+#else
     if (!PEM_write_bio_RSA_PUBKEY(out, pkey->pkey.rsa)) {
+#endif
       BIO_free(out);
       mrb_raise(mrb, eRSAError, NULL);
     }

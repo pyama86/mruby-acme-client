@@ -15,10 +15,20 @@ const mrb_data_type ossl_evp_pkey_type = {"OpenSSL/EVP_PKEY", ossl_evp_pkey_free
 
 mrb_value ossl_pkey_new(mrb_state *mrb, EVP_PKEY *pkey)
 {
+  int type;
+#if (OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined LIBRESSL_VERSION_NUMBER)
+  if (!pkey || (type = EVP_PKEY_base_id(pkey)) == EVP_PKEY_NONE) {
+#else
   if (!pkey) {
+#endif
     mrb_raise(mrb, ePKeyError, "Cannot make new key from NULL.");
   }
+
+#if (OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined LIBRESSL_VERSION_NUMBER)
+  switch (type) {
+#else
   switch (EVP_PKEY_type(pkey->type)) {
+#endif
   case EVP_PKEY_RSA:
     return ossl_rsa_new(mrb, pkey);
   default:
@@ -37,10 +47,30 @@ EVP_PKEY *GetPKeyPtr(mrb_state *mrb, mrb_value obj)
   return pkey;
 }
 
+const EVP_MD *
+ossl_evp_get_digestbyname(mrb_value obj)
+{
+    const EVP_MD *md;
+    ASN1_OBJECT *oid = NULL;
+
+    EVP_MD_CTX *ctx;
+
+    GetDigest(obj, ctx);
+
+    md = EVP_MD_CTX_md(ctx);
+
+    return md;
+}
+
 static mrb_value mrb_ossl_pkey_sign(mrb_state *mrb, mrb_value self)
 {
   EVP_PKEY *pkey;
+#if (OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined LIBRESSL_VERSION_NUMBER)
+  EVP_MD_CTX *ctx;
+#else
   EVP_MD_CTX ctx, *ictx;
+#endif
+
   unsigned int buf_len;
   mrb_value str, digest_instance, data;
   int result;
@@ -53,13 +83,37 @@ static mrb_value mrb_ossl_pkey_sign(mrb_state *mrb, mrb_value self)
 
   GetPKey(self, pkey);
 
-  ictx = DATA_PTR(digest_instance);
 
+#if (OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined LIBRESSL_VERSION_NUMBER)
+  const EVP_MD *md;
+  ctx = EVP_MD_CTX_new();
+  md = ossl_evp_get_digestbyname(digest_instance);
+
+  if(!EVP_SignInit_ex(ctx, md, NULL)) {
+	  EVP_MD_CTX_free(ctx);
+    mrb_raise(mrb, ePKeyError, "EVP_SignInit_ex.");
+  }
+
+  if(!EVP_SignUpdate(ctx, RSTRING_PTR(data), RSTRING_LEN(data))) {
+	  EVP_MD_CTX_free(ctx);
+    mrb_raise(mrb, ePKeyError, "EVP_SignUpdate.");
+  }
+  str = mrb_str_new(mrb, 0, EVP_PKEY_size(pkey));
+  result = EVP_SignFinal(ctx, (unsigned char *)RSTRING_PTR(str), &buf_len, pkey);
+#else
+  ictx = DATA_PTR(digest_instance);
   EVP_SignInit(&ctx, ictx->digest);
   EVP_SignUpdate(&ctx, RSTRING_PTR(data), RSTRING_LEN(data));
   str = mrb_str_new(mrb, 0, EVP_PKEY_size(pkey) + 16);
   result = EVP_SignFinal(&ctx, (unsigned char *)RSTRING_PTR(str), &buf_len, pkey);
+#endif
+
+#if (OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined LIBRESSL_VERSION_NUMBER)
+  EVP_MD_CTX_free(ctx);
+#else
   EVP_MD_CTX_cleanup(&ctx);
+#endif
+
   if (!result)
     mrb_raise(mrb, ePKeyError, NULL);
   assert((long)buf_len <= RSTRING_LEN(str));
