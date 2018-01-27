@@ -118,3 +118,7 @@ do{\
 #define OSSL_BIO_reset(bio)	(void)BIO_reset((bio)); \
 				ERR_clear_error();
 #endif /* _OSSL_H_ */
+#define GetDigest(obj, ctx)                                                                        \
+  do {                                                                                             \
+    ctx = DATA_PTR(obj);                                                                           \
+  } while (0)

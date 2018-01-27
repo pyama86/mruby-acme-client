@@ -9,7 +9,7 @@ client = Acme::Client.new(
 registration = client.register('mailto:contact@example.org')
 registration.agree_terms
 
-domains = %w(eample.org www.example.org)
+domains = %w(eample.org)
 
 domains.each do |n|
   authorization = client.authorize(n)

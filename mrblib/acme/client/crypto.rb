@@ -6,14 +6,13 @@ class Acme::Client::Crypto
   end
 
   def generate_signed_jws(nonce, payload)
-    header = { alg: jws_alg, jwk: jwk }
+    header = { typ: 'JWT', alg: jws_alg, jwk: jwk }
     encoded_header = Base64.urlsafe_base64(header.merge(nonce: nonce).to_json)
     encoded_payload = Base64.urlsafe_base64(payload.to_json)
     signature_data = "#{encoded_header}.#{encoded_payload}"
     signature = private_key.sign digest, signature_data
     encoded_signature = Base64.urlsafe_base64(signature)
     {
-      header: header,
       protected: encoded_header,
       payload: encoded_payload,
       signature: encoded_signature
