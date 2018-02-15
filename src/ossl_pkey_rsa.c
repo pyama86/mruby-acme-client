@@ -256,7 +256,7 @@ static VALUE ossl_rsa_export(mrb_state *mrb, VALUE self)
 #if (OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined LIBRESSL_VERSION_NUMBER)
 
   RSA *rsa;
-  etRSA(self, rsa);
+  GetRSA(self, rsa);
   if (RSA_HAS_PRIVATE(rsa)) {
     if (!PEM_write_bio_RSAPrivateKey(out, rsa, ciph, NULL, 0, ossl_pem_passwd_cb,
                                      passwd)) {
