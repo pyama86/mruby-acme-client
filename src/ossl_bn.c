@@ -1,5 +1,5 @@
 
-//LICENSE: https://github.com/ruby/openssl/blob/master/LICENSE.txt
+// LICENSE: https://github.com/ruby/openssl/blob/master/LICENSE.txt
 #include "ossl.h"
 
 struct RClass *cBN;
@@ -32,7 +32,6 @@ BIGNUM *GetBNPtr(mrb_state *mrb, VALUE obj)
   return bn;
 }
 
-
 mrb_value ossl_bn_new(mrb_state *mrb, const BIGNUM *bn)
 {
   BIGNUM *newbn;
@@ -50,7 +49,8 @@ mrb_value ossl_bn_new(mrb_state *mrb, const BIGNUM *bn)
 
 static mrb_value mrb_ossl_bn_to_s(mrb_state *mrb, mrb_value self)
 {
-  int base = 10, len;
+  mrb_int base = 2;
+  int len;
   BIGNUM *bn;
   mrb_value str, value_bn;
 
