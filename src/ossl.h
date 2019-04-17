@@ -102,8 +102,8 @@ int ossl_pem_passwd_cb(char *buf, int max_len, int flag, void *pwd);
 #define OSSL_Check_Kind(mrb, obj, klass)                                                           \
   do {                                                                                             \
     if (!mrb_obj_is_kind_of((mrb), (obj), (klass))) {                                              \
-      mrb_raisef((mrb), E_TYPE_ERROR, "instance %s class %s", mrb_obj_class((mrb), (obj)),         \
-                 (klass));                                                                         \
+      mrb_raisef((mrb), E_TYPE_ERROR, "instance %S class %S",                                      \
+                 mrb_class_name(mrb, mrb_obj_class((mrb), (obj))), mrb_class_name(mrb, klass));    \
     }                                                                                              \
   } while (0)
 
