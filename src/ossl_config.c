@@ -1,4 +1,4 @@
-//LICENSE: https://github.com/ruby/openssl/blob/master/LICENSE.txt
+// LICENSE: https://github.com/ruby/openssl/blob/master/LICENSE.txt
 #include "ossl.h"
 struct RClass *cConfig;
 struct RClass *eConfigError;
@@ -31,34 +31,6 @@ CONF *GetConfigPtr(mrb_state *mrb, VALUE obj)
 
   return conf;
 }
-
-#if !defined(HAVE_CONF_GET1_DEFAULT_CONFIG_FILE)
-#define OPENSSL_CONF "openssl.cnf"
-char *CONF_get1_default_config_file(void)
-{
-  char *file;
-  int len;
-
-  file = getenv("OPENSSL_CONF");
-  if (file)
-    return BUF_strdup(file);
-  len = strlen(X509_get_default_cert_area());
-#ifndef OPENSSL_SYS_VMS
-  len++;
-#endif
-  len += strlen(OPENSSL_CONF);
-  file = OPENSSL_malloc(len + 1);
-  if (!file)
-    return NULL;
-  strcpy(file, X509_get_default_cert_area());
-#ifndef OPENSSL_SYS_VMS
-  strcat(file, "/");
-#endif
-  strcat(file, OPENSSL_CONF);
-
-  return file;
-}
-#endif
 
 void Init_ossl_config(mrb_state *mrb)
 {
