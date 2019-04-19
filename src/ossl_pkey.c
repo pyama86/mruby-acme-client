@@ -1,5 +1,5 @@
 
-//LICENSE: https://github.com/ruby/openssl/blob/master/LICENSE.txt
+// LICENSE: https://github.com/ruby/openssl/blob/master/LICENSE.txt
 #include "ossl.h"
 
 struct RClass *ePKeyError;
@@ -42,24 +42,23 @@ EVP_PKEY *GetPKeyPtr(mrb_state *mrb, mrb_value obj)
 {
   EVP_PKEY *pkey;
 
-  SafeGetPKey(obj, pkey);
+  GetPKey(obj, pkey);
 
   return pkey;
 }
 
-const EVP_MD *
-ossl_evp_get_digestbyname(mrb_value obj)
+const EVP_MD *ossl_evp_get_digestbyname(mrb_value obj)
 {
-    const EVP_MD *md;
-    ASN1_OBJECT *oid = NULL;
+  const EVP_MD *md;
+  ASN1_OBJECT *oid = NULL;
 
-    EVP_MD_CTX *ctx;
+  EVP_MD_CTX *ctx;
 
-    GetDigest(obj, ctx);
+  GetDigest(obj, ctx);
 
-    md = EVP_MD_CTX_md(ctx);
+  md = EVP_MD_CTX_md(ctx);
 
-    return md;
+  return md;
 }
 
 static mrb_value mrb_ossl_pkey_sign(mrb_state *mrb, mrb_value self)
@@ -83,19 +82,18 @@ static mrb_value mrb_ossl_pkey_sign(mrb_state *mrb, mrb_value self)
 
   GetPKey(self, pkey);
 
-
 #if (OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined LIBRESSL_VERSION_NUMBER)
   const EVP_MD *md;
   ctx = EVP_MD_CTX_new();
   md = ossl_evp_get_digestbyname(digest_instance);
 
-  if(!EVP_SignInit_ex(ctx, md, NULL)) {
-	  EVP_MD_CTX_free(ctx);
+  if (!EVP_SignInit_ex(ctx, md, NULL)) {
+    EVP_MD_CTX_free(ctx);
     mrb_raise(mrb, ePKeyError, "EVP_SignInit_ex.");
   }
 
-  if(!EVP_SignUpdate(ctx, RSTRING_PTR(data), RSTRING_LEN(data))) {
-	  EVP_MD_CTX_free(ctx);
+  if (!EVP_SignUpdate(ctx, RSTRING_PTR(data), RSTRING_LEN(data))) {
+    EVP_MD_CTX_free(ctx);
     mrb_raise(mrb, ePKeyError, "EVP_SignUpdate.");
   }
   str = mrb_str_new(mrb, 0, EVP_PKEY_size(pkey));
