@@ -1,26 +1,26 @@
 
-//LICENSE: https://github.com/ruby/openssl/blob/master/LICENSE.txt
+// LICENSE: https://github.com/ruby/openssl/blob/master/LICENSE.txt
 #include "ossl.h"
 
 struct RClass *eX509ReqError;
 struct RClass *cX509Req;
-#define SetX509Req(obj, req)                                                                  \
+#define SetX509Req(obj, req)                                                                       \
   do {                                                                                             \
     if (!(req)) {                                                                                  \
       mrb_raise((mrb), E_RUNTIME_ERROR, "Req wasn't initialized!");                                \
     }                                                                                              \
-    DATA_PTR(obj) = req; \
-    DATA_TYPE(obj) = &ossl_x509_request_type; \
+    DATA_PTR(obj) = req;                                                                           \
+    DATA_TYPE(obj) = &ossl_x509_request_type;                                                      \
   } while (0)
-#define GetX509Req(obj, req)                                                                  \
+#define GetX509Req(obj, req)                                                                       \
   do {                                                                                             \
-    req = DATA_PTR(obj);                          \
+    req = DATA_PTR(obj);                                                                           \
   } while (0)
 
-#define SafeGetX509Req(obj, req)                                                              \
+#define SafeGetX509Req(obj, req)                                                                   \
   do {                                                                                             \
     OSSL_Check_Kind((mrb), (obj), cX509Req);                                                       \
-    GetX509Req((obj), (req));                                                               \
+    GetX509Req((obj), (req));                                                                      \
   } while (0)
 
 static void ossl_x509req_free(mrb_state *mrb, void *ptr)
@@ -82,7 +82,7 @@ X509_NAME *GetX509NamePtr(mrb_state *mrb, mrb_value obj)
 {
   X509_NAME *name;
 
-  SafeGetX509Name(obj, name);
+  GetX509Name(obj, name);
 
   return name;
 }
