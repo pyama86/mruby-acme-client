@@ -143,7 +143,7 @@ EVP_PKEY *GetPrivPKeyPtr(mrb_state *mrb, VALUE obj)
   if (!mrb_bool(mrb_funcall(mrb, obj, "private?", 0, NULL))) {
     mrb_raise(mrb, E_ARGUMENT_ERROR, "Private key is needed.");
   }
-  SafeGetPKey(obj, pkey);
+  GetPKey(obj, pkey);
 
   return pkey;
 }
