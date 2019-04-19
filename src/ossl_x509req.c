@@ -148,7 +148,7 @@ X509_REQ *GetX509ReqPtr(mrb_state *mrb, VALUE obj)
 {
   X509_REQ *req;
 
-  SafeGetX509Req(obj, req);
+  GetX509Req(obj, req);
 
   return req;
 }
