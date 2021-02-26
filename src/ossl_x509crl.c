@@ -1,6 +1,7 @@
 
 //LICENSE: https://github.com/ruby/openssl/blob/master/LICENSE.txt
 #include "ossl.h"
+extern struct RClass *mX509;
 #define GetX509CRL(obj, crl)                                                                  \
   do {                                                                                             \
     crl = DATA_PTR(obj);                                                                     \

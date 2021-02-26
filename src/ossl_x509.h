@@ -1,6 +1,5 @@
 
 //LICENSE: https://github.com/ruby/openssl/blob/master/LICENSE.txt
-struct RClass *mX509;
 X509 *GetX509CertPtr(mrb_state *mrb, mrb_value VALUE);
 void Init_ossl_x509ext(mrb_state *mrb);
 void Init_ossl_x509cert(mrb_state *mrb);
