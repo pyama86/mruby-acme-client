@@ -2,6 +2,7 @@
 // LICENSE: https://github.com/ruby/openssl/blob/master/LICENSE.txt
 #include "ossl.h"
 
+extern struct RClass *mX509;
 struct RClass *eX509ReqError;
 struct RClass *cX509Req;
 #define SetX509Req(obj, req)                                                                       \

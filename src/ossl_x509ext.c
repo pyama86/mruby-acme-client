@@ -4,6 +4,7 @@
 struct RClass *cX509Ext;
 struct RClass *cX509ExtFactory;
 struct RClass *eX509ExtError;
+extern struct RClass *mX509;
 
 #define MakeX509ExtFactory(obj, ctx)                                                               \
   do {                                                                                             \

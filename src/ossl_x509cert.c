@@ -3,6 +3,8 @@
 #include "ossl.h"
 struct RClass *cX509Cert;
 struct RClass *eX509CertError;
+extern struct RClass *mX509;
+
 #define GetX509(obj, x509)                                                                    \
   do {                                                                                             \
     x509 = DATA_PTR(obj);                                                                   \

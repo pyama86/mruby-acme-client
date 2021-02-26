@@ -2,6 +2,9 @@
 //LICENSE: https://github.com/ruby/openssl/blob/master/LICENSE.txt
 #include "ossl.h"
 
+struct RClass *mDigest;
+struct RClass *eDigestError;
+
 #define SafeGetDigest(obj, ctx)                                                                    \
   do {                                                                                             \
     OSSL_Check_Kind((mrb), (obj), cDigest);                                                        \
