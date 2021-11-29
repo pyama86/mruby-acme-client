@@ -2,6 +2,8 @@
 //LICENSE: https://github.com/ruby/openssl/blob/master/LICENSE.txt
 #include "ossl.h"
 
+struct RClass *mX509;
+
 void mrb_init_ossl_x509(mrb_state *mrb)
 {
   mX509 = mrb_define_module_under(mrb, mOSSL, "X509");

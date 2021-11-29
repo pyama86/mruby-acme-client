@@ -3,6 +3,7 @@
 #include "ossl.h"
 struct RClass *cX509Attr;
 struct RClass *eX509AttrError;
+extern struct RClass *mX509;
 
 static void ossl_x509attr_free(mrb_state *mrb, void *ptr)
 {
