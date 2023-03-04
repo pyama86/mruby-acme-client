@@ -9,6 +9,7 @@
 #include "mruby/compile.h"
 #include "mruby/data.h"
 #include "mruby/hash.h"
+#include "mruby/internal.h"
 #include "mruby/object.h"
 #include "mruby/string.h"
 #include "mruby/variable.h"
