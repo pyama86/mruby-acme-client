@@ -9,7 +9,7 @@
 #include "mruby/compile.h"
 #include "mruby/data.h"
 #include "mruby/hash.h"
-#if MRUBY_RELEASE_MAJOR >= 3 && MRUBY_RELEASE_MINOR >= 2
+#if MRUBY_RELEASE_MAJOR > 3 || (MRUBY_RELEASE_MAJOR == 3 && MRUBY_RELEASE_MINOR >= 2)
 #include "mruby/internal.h"
 #endif
 #include "mruby/object.h"
